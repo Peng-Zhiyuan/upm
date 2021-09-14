@@ -1,5 +1,29 @@
 {
   "dependencies": {
+    "com.pzy.gameobjectpool": {
+      "version": "file:com.pzy.gameobjectpool",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.stuffobject": {
+      "version": "file:com.pzy.stuffobject",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.uiengine": {
+      "version": "file:com.pzy.uiengine",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.utils": {
+      "version": "file:com.pzy.utils",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 0,

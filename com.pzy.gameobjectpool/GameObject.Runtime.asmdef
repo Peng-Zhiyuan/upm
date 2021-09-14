@@ -1,0 +1,15 @@
+{
+    "name": "GameObject.Runtime",
+    "references": [
+        "GUID:56e9c274313824a989393df68af8e92d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
