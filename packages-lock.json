@@ -30,6 +30,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.drivermanager": {
+      "version": "file:com.pzy.drivermanager",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.gameobjectpool": {
       "version": "file:com.pzy.gameobjectpool",
       "depth": 0,

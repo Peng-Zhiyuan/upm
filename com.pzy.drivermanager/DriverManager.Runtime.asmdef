@@ -1,0 +1,15 @@
+{
+    "name": "DriverManager.Runtime",
+    "references": [
+        "GUID:01435ba3de36f4fae8ef1d0ceabdfd0a"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

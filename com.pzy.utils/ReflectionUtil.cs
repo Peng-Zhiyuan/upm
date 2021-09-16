@@ -58,4 +58,16 @@ public static class ReflectionUtil
         return subTypeQuery.ToList();
     }
 
+    public static List<Type> GetSubClassesInAllAssemblies<T>()
+    {
+        var assemblyList = AppDomain.CurrentDomain.GetAssemblies();
+        var ret = new List<Type>();
+        foreach(var assembly in assemblyList)
+        {
+            var list = GetSubClasses<T>(assembly);
+            ret.AddRange(list);
+        }
+        return ret;
+    }
+
 }
