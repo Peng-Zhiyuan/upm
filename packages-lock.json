@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.pzy.customlitjson": {
+      "version": "file:com.pzy.litjson",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.gameobjectpool": {
       "version": "file:com.pzy.gameobjectpool",
       "depth": 0,
