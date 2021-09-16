@@ -1,0 +1,13 @@
+﻿	private static Table<{Name}Row> _{name}Table;
+	public static Table<{Name}Row> {Name}Table
+	{
+		get
+		{
+			if(_{name}Table == null)
+			{
+				var etuTableString = ClientConfigManager.Stuff.LoadTableString("{name}");
+				_{name}Table = new Table<{Name}Row>("{name}", etuTableString);
+			}
+			return _{name}Table;
+		}
+	}

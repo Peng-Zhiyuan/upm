@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.pzy.clientconfig": {
+      "version": "file:com.pzy.clientconfig",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.codelinker": {
       "version": "file:com.pzy.codelinker",
       "depth": 0,
