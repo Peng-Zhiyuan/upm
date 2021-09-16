@@ -12,6 +12,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.nativebridge": {
+      "version": "file:com.pzy.nativebridge",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.stuffobject": {
       "version": "file:com.pzy.stuffobject",
       "depth": 0,
