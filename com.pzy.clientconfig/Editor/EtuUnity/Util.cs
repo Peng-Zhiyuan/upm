@@ -11,7 +11,8 @@ public class Util
         //var root = Path.GetDirectoryName(programFilePath);
         //return root;
         //return "Assets/Editor/-ClientConfig/EtuUnity";
-        return "Assets/Subsystems/-ClientConfig/Editor/EtuUnity";
+        //return "Assets/Subsystems/-ClientConfig/Editor/EtuUnity";
+        return "Packages/com.pzy.clientconfig/Editor/EtuUnity";
     }
 
     public static string FindFileInParent(string searchStartDir, string fileName)

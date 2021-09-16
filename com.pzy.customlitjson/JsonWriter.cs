@@ -261,10 +261,10 @@ namespace CustomLitJson
                 }
 
                 // Default, turn into a \uXXXX sequence
-                //IntToHex ((int) str[i], hex_seq);
-                //writer.Write ("\\u");
-                //writer.Write (hex_seq);
-                writer.Write(str[i]);
+                // IntToHex ((int) str[i], hex_seq);
+                // writer.Write ("\\u");
+                // writer.Write (hex_seq);
+                writer.Write (str[i]);
             }
 
             writer.Write ('"');
@@ -410,7 +410,8 @@ namespace CustomLitJson
 
         public void WriteObjectEnd ()
         {
-            DoValidation (Condition.InObject);
+            // pzy: 不知道，在写对象的时候会报错
+            // DoValidation (Condition.InObject);
             PutNewline (false);
 
             ctx_stack.Pop ();

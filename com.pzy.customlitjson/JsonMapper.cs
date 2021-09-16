@@ -252,9 +252,6 @@ namespace CustomLitJson
 
 			IList<PropertyMetadata> props = new List<PropertyMetadata> ();
 
-			// pzy:
-			// 类型过滤
-
 			foreach (PropertyInfo p_info in type.GetProperties ()) {
 				if (p_info.Name == "Item")
 					continue;
@@ -309,6 +306,8 @@ namespace CustomLitJson
 
 		public  object ReadValue (Type inst_type, JsonReader reader)
 		{
+
+
 			if(inst_type == typeof(JsonData))
 			{
 				var jd = ToObject(reader);
@@ -340,14 +339,16 @@ namespace CustomLitJson
 			}
 
 
-
-            if (reader.Token == JsonToken.Double ||
+			if (reader.Token == JsonToken.Double ||
 				reader.Token == JsonToken.Int ||
-				reader.Token == JsonToken.Long ||
+				reader.Token == JsonToken.Long||
 				reader.Token == JsonToken.String ||
 				reader.Token == JsonToken.Boolean) {
 
-                Type json_type = reader.Value.GetType ();
+                // josn_type is Int32
+                // reader.Token is JsonType Int
+                // inst_type is enum of TableType
+				Type json_type = reader.Value.GetType (); // Int32
 
 				if (inst_type.IsAssignableFrom (json_type))
 					return reader.Value;
@@ -384,31 +385,14 @@ namespace CustomLitJson
 				{
 					return "";
 				}
-				else if(inst_type==typeof(UnityEngine.Color))
-				{
-					var str = (string)reader.Value;
-        			str = str.Replace("RGBA", "");
-					str = str.Replace("(", "");
-					str = str.Replace(")", "");
-					var split = str.Split(',');
-					var color = new UnityEngine.Color(float.Parse(split[0]), float.Parse(split[1]), float.Parse(split[2]), float.Parse(split[3]));
-					return color;
-				}
 				else if(inst_type==typeof(System.Boolean))
 				{
 					return false;
 				}
-
-				// pzy: add
-				else if (inst_type == typeof(System.UInt64))
-				{
-					return System.Convert.ToUInt64(reader.Value);
-				}
-				else if (inst_type == typeof(System.UInt64?))
-				{
-					return System.Convert.ToUInt64(reader.Value);
-				}
-
+                else if(inst_type.IsEnum) // pzy: 修复不能读取枚举的bug
+                {
+                    return reader.Value; 
+                }
 				return null;
 			}
 
@@ -504,10 +488,14 @@ namespace CustomLitJson
 							PropertyMetadata prop_data =
 								t_data.Properties [property];
 
-							if (prop_data.IsField) {
-								((FieldInfo)prop_data.Info).SetValue (
-									instance, ReadValue (prop_data.Type, reader));
-							} else {
+							if (prop_data.IsField) 
+                            {
+                                var value = ReadValue (prop_data.Type, reader);
+                                var fieldInfo = (FieldInfo)prop_data.Info;
+								fieldInfo.SetValue (instance, value);
+							} 
+                            else 
+                            {
 								PropertyInfo p_info =
 									(PropertyInfo)prop_data.Info;
 
@@ -609,8 +597,12 @@ namespace CustomLitJson
 
 				while (true) {
 					IJsonWrapper item = ReadValue (factory, reader);
-					if (reader.Token == JsonToken.ArrayEnd)
-						break;
+                    if(item == null)
+                    {
+                        break;
+                    }
+					// if (reader.Token == JsonToken.ArrayEnd)
+					// 	break;
 
 					((IList)instance).Add (item);
 				}
@@ -795,11 +787,6 @@ namespace CustomLitJson
 				return;
 			}
 
-			if (obj is UnityEngine.Color) {
-				writer.Write (obj.ToString());
-				return;
-			}
-
 			if (obj is String) {
 				writer.Write ((string)obj);
 				return;
@@ -807,11 +794,6 @@ namespace CustomLitJson
 
 			if (obj is Double) {
 				writer.Write ((double)obj);
-				return;
-			}
-
-			if (obj is float) {
-				writer.Write ((float)obj);
 				return;
 			}
 
@@ -884,19 +866,12 @@ namespace CustomLitJson
 			if (obj is Enum) {
 				Type e_type = Enum.GetUnderlyingType (obj_type);
 
-				if (e_type == typeof(long) || e_type == typeof(uint) || e_type == typeof(ulong))
-				{
+				if (e_type == typeof(long)
+                    || e_type == typeof(uint)
+                    || e_type == typeof(ulong))
 					writer.Write ((ulong)obj);
-				}
-				else if(e_type == typeof(byte))
-				{
-					writer.Write ((byte)obj);
-				}
 				else
-				{
 					writer.Write ((int)obj);
-				}
-					
 
 				return;
 			}
@@ -982,16 +957,7 @@ namespace CustomLitJson
 		{
 			JsonReader reader = new JsonReader (json);
 
-			var obj = (T)ReadValue (typeof(T), reader);
-			return obj;
-		}
-
-		public object ToObject (string json, Type type)
-		{
-			JsonReader reader = new JsonReader (json);
-
-			var obj = ReadValue (type, reader);
-			return obj;
+			return (T)ReadValue (typeof(T), reader);
 		}
 
 		public  IJsonWrapper ToWrapper (WrapperFactory factory,
@@ -1039,6 +1005,56 @@ namespace CustomLitJson
 		{
 			custom_importers_table.Clear ();
 		}
+
+	}
+
+	public static class JsonMapperExtend
+	{
+//		static public string ToJson (object obj)
+//		{
+//			return JsonMapper.Instance.ToJson(obj);
+//		}
+//		
+//		static public  void ToJson (object obj, JsonWriter writer)
+//		{
+//			JsonMapper.Instance.ToJson (obj, writer);
+//		}
+//		
+//		static public  JsonData ToObject (JsonReader reader)
+//		{
+//			return JsonMapper.Instance.ToObject(reader);
+//		}
+//
+//		static public  JsonData ToObject (TextReader reader)
+//		{
+//			return JsonMapper.Instance.ToObject(reader);
+//		}
+//		
+//		static public  JsonData ToObject (string json)
+//		{
+//			return JsonMapper.Instance.ToObject (json);
+//		}
+//		
+//		static public  T ToObject<T> (JsonReader reader)
+//		{
+//			return JsonMapper.Instance.ToObject<T> (reader);
+//		}
+//		
+//		static public  T ToObject<T> (TextReader reader)
+//		{
+//			return JsonMapper.Instance.ToObject<T> (reader);
+//		}
+//
+//		static public  T ToObject<T> (string json)
+//		{
+//			return JsonMapper.Instance.ToObject<T> (json);
+//		}
+		
+		static public  object ToObject(this JsonMapper jm,System.Type type, string json)
+		{
+			return JsonMapper.Instance.ReadValue(type, new JsonReader( json ));
+		}
+		
 
 	}
 }

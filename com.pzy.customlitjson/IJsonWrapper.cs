@@ -70,7 +70,7 @@ namespace LegacySystem.Collections.Specialized {
 		
 		Object this[int index] { get; set; }
 		
-		new IDictionaryEnumerator GetEnumerator();
+		IDictionaryEnumerator GetEnumerator();
 		void Insert(int index, Object key, Object value);
 		void RemoveAt(int index);
 	}

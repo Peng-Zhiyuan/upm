@@ -11,7 +11,7 @@
 
 using System;
 
- 
+
 namespace CustomLitJson
 {
     public class JsonException : ApplicationException

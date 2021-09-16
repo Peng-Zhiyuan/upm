@@ -248,7 +248,7 @@ namespace etucli
             }
             var staticDataTemp = Content.StaticDataFrame;
             var code = staticDataTemp.Replace("{body}", allPropertyCode);
-            File.WriteAllText($"{workspace}/code/ClientConfig+.cs", code);
+            File.WriteAllText($"{workspace}/code/ClientConfig.cs", code);
 
             // 代码
             {

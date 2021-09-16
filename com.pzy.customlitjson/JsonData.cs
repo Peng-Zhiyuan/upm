@@ -201,16 +201,6 @@ namespace CustomLitJson
         }
         #endregion
 
-        public T Get<T>(string key)
-        {
-            var dic = EnsureDictionary();
-            if(!dic.Contains(key))
-            {
-                throw new Exception("key not found ind json object: " + key);
-            }
-            var ret = TryGet<T>(key, default(T));
-            return ret;
-        }
 
 		public T TryGet<T>(string key, T default_)
         {
@@ -228,14 +218,6 @@ namespace CustomLitJson
             else if (typeof(T) == typeof(int))
             {
                 return (T)System.Convert.ChangeType(int.Parse(jd.ToString()),typeof(int));
-            }
-            else if (typeof(T) == typeof(float))
-            {
-                return (T)System.Convert.ChangeType(float.Parse(jd.ToString()),typeof(float));
-            }
-            else if (typeof(T) == typeof(double))
-            {
-                return (T)System.Convert.ChangeType(double.Parse(jd.ToString()),typeof(double));
             }
             else if (typeof(T) == typeof(bool))
             {
@@ -340,7 +322,6 @@ namespace CustomLitJson
             set {
                 EnsureCollection ();
 
-                
                 if (type == JsonType.Array)
                     inst_array[index] = value;
                 else {

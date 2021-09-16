@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using UnityEngine;
 
 
 namespace CustomLitJson
@@ -440,7 +441,7 @@ namespace CustomLitJson
                         parse_table[current_symbol][current_input];
 
                 } catch (KeyNotFoundException e) {
-					UnityEngine.Debug.Log("    current_symbol"+current_symbol+"       current_input"+current_input);
+					Debug.Log("[JsonReader] current_symbol: " + current_symbol + ",       current_input: " + current_input);
                     throw new JsonException ((ParserToken) current_input, e);
                 }
 
