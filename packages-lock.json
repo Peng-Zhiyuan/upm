@@ -1,7 +1,19 @@
 {
   "dependencies": {
     "com.pzy.customlitjson": {
-      "version": "file:com.pzy.litjson",
+      "version": "file:com.pzy.customlitjson",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.datemanager": {
+      "version": "file:com.pzy.datemanager",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.dialogmanager": {
+      "version": "file:com.pzy.dialogmanager",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}

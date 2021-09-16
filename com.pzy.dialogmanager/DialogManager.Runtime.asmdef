@@ -1,0 +1,17 @@
+{
+    "name": "DialogManager.Runtime",
+    "references": [
+        "GUID:7bbaa7f9d5c3e4136a93916189d39273",
+        "GUID:01435ba3de36f4fae8ef1d0ceabdfd0a",
+        "GUID:56e9c274313824a989393df68af8e92d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
