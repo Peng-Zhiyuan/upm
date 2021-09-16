@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.pzy.codelinker": {
+      "version": "file:com.pzy.codelinker",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.customlitjson": {
       "version": "file:com.pzy.customlitjson",
       "depth": 0,
