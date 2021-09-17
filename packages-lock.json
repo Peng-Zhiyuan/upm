@@ -42,6 +42,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.formatsetter": {
+      "version": "file:com.pzy.formatsetter",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.gameobjectpool": {
       "version": "file:com.pzy.gameobjectpool",
       "depth": 0,
