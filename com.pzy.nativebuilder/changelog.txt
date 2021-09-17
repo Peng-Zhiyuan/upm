@@ -1,0 +1,10 @@
+v2.0.4
+支持 version 和 androidVersionCode
+v2.0.3
+支持 exportAndroidProject
+v2.0.0
+完全重构
+v1.0.2
+针对Unity2019.3移除过时的代码
+v1.0.1
+移除了 backup 功能，这个功能在现在的超级无敌究极完全体打包系统下不再被需要

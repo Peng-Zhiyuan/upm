@@ -66,6 +66,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.nativebuilder": {
+      "version": "file:com.pzy.nativebuilder",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.stuffobject": {
       "version": "file:com.pzy.stuffobject",
       "depth": 0,
