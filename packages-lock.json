@@ -36,8 +36,20 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.envmanager": {
+      "version": "file:com.pzy.envmanager",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.gameobjectpool": {
       "version": "file:com.pzy.gameobjectpool",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.lunchermanifest": {
+      "version": "file:com.pzy.lunchermanifest",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
