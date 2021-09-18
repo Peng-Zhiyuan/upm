@@ -1,0 +1,310 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1726182683, guid: a4865f1ab4504ed8a368670db22f409c, type: 3}
+  m_Name: AOTGenerationConfig
+  m_EditorClassIdentifier: 
+  automateBeforeBuilds: 1
+  deleteDllAfterBuilds: 1
+  AutomateForAllAOTPlatforms: 1
+  automateForPlatforms: 090000000d000000
+  lastScan: 637560828030210430
+  supportSerializedTypes:
+  - TypeName: System.Action, mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Action`1[[System.Int32, mscorlib]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Action`1[[UnitCardView, Unity.Game]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnityEngine.AnimationCurve, UnityEngine.CoreModule
+    IsCustom: 0
+    Emit: 1
+  - TypeName: AnimationInfo, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: AttackAssetData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnityEngine.AudioClip, UnityEngine.AudioModule
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BattleEntityType, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BloomSetting, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Boolean, mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BuffBase, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BuffView, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletAnimEventData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletClearBulletData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletCycleData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletDamageData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletData[], Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletDataGroup, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletElasticData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletFirerData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletFloatingCannonData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletFollowData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletFuncData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletFuncType, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletLightData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletMoveData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletParabolaData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletRandomFirerData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletRangeData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletSetTransData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletStickData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: BulletTargetType, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: ChromaticAberrationSetting, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: MS.Internal.Xml.XPath.ClonableStack`1[[SkillAssetData, Unity.Game]],
+      System.Xml
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnityEngine.Color, UnityEngine.CoreModule
+    IsCustom: 0
+    Emit: 1
+  - TypeName: ColorGradingSetting, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.Dictionary`2[[BuffBase, Unity.Game],[BuffView,
+      Unity.Game]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.Dictionary`2[[System.Int32, mscorlib],[EnemyWave,
+      Unity.Game]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.Dictionary`2[[System.Int32, mscorlib],[UnityEngine.UI.RawImage,
+      UnityEngine.UI]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.Dictionary`2[[System.Int32, mscorlib],[UnitCardFrame,
+      Unity.Game]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.Dictionary`2[[System.Int32, mscorlib],[UnitDataAsset,
+      Unity.Game]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.Dictionary`2[[System.String, mscorlib],[UnityEngine.GameObject,
+      UnityEngine.CoreModule]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.Dictionary`2[[UnitProperty, Unity.Game],[UnityEngine.GameObject,
+      UnityEngine.CoreModule]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: EnemyWave, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.EnumEqualityComparer`1[[UnitProperty, Unity.Game]],
+      mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Single, mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: FloatSetting, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnityEngine.GameObject, UnityEngine.CoreModule
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.GenericEqualityComparer`1[[System.Int32,
+      mscorlib]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.GenericEqualityComparer`1[[System.String,
+      mscorlib]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: HeroDataAsset, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.IEqualityComparer`1[[BuffBase, Unity.Game]],
+      mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.IEqualityComparer`1[[System.Int32, mscorlib]],
+      mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.IEqualityComparer`1[[System.String, mscorlib]],
+      mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.IEqualityComparer`1[[UnitProperty, Unity.Game]],
+      mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Int32, mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnityEngine.Keyframe, UnityEngine.CoreModule
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnityEngine.Keyframe[], UnityEngine.CoreModule
+    IsCustom: 0
+    Emit: 1
+  - TypeName: LensDistortionSetting, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.List`1[[AnimationInfo, Unity.Game]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.List`1[[AttackAssetData, Unity.Game]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.List`1[[BulletFuncData, Unity.Game]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.List`1[[BulletFuncType, Unity.Game]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.List`1[[UnityEngine.GameObject, UnityEngine.CoreModule]],
+      mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.List`1[[System.Int32, mscorlib]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.List`1[[PostInfo, Unity.Game]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.List`1[[Setting, Unity.Game]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.List`1[[SkillAssetData, Unity.Game]], mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.Collections.Generic.ObjectEqualityComparer`1[[BuffBase, Unity.Game]],
+      mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: PetDataAsset, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: PostInfo, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnityEngine.Rendering.PostProcessing.PostProcessProfile, Unity.Postprocessing.Runtime
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnityEngine.UI.RawImage, UnityEngine.UI
+    IsCustom: 0
+    Emit: 1
+  - TypeName: ResourceViewStyle, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: ResourceViewStyle[], Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: SecondFireType, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: Setting, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: SkillAssetData, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: System.String, mscorlib
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnityEngine.Transform, UnityEngine.CoreModule
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnitCardFrame, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnitCardView, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnitDataAsset, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnitProperty, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnityEngine.Vector2, UnityEngine.CoreModule
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnityEngine.Vector3, UnityEngine.CoreModule
+    IsCustom: 0
+    Emit: 1
+  - TypeName: VignetteSetting, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: WaveType, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: WeaponDataAsset, Unity.Game
+    IsCustom: 0
+    Emit: 1
+  - TypeName: UnityEngine.WrapMode, UnityEngine.CoreModule
+    IsCustom: 0
+    Emit: 1

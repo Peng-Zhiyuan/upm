@@ -13,7 +13,10 @@ public class RecycledGameObject : SerializedMonoBehaviour
 public class RecycledGameObject : MonoBehaviour
 #endif
 {
+
+#if ODIN_INSPECTOR
     [ReadOnly]
+#endif
     public GameObject prefab;
 
     public GameObject Prefab
