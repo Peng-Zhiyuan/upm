@@ -3,9 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+#if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
+#endif
 
+#if ODIN_INSPECTOR
 public class RecycledGameObject : SerializedMonoBehaviour
+#else
+public class RecycledGameObject : MonoBehaviour
+#endif
 {
     [ReadOnly]
     public GameObject prefab;
