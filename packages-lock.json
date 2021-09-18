@@ -82,7 +82,11 @@
       "version": "file:com.pzy.uiengine",
       "depth": 0,
       "source": "embedded",
-      "dependencies": {}
+      "dependencies": {
+        "com.pzy.stuffobject": "1.0.0",
+        "com.pzy.gameobjectpool": "1.0.0",
+        "com.pzy.utils": "1.0.0"
+      }
     },
     "com.pzy.utils": {
       "version": "file:com.pzy.utils",
