@@ -46,6 +46,8 @@ public class UpmGitManagerWindow : EditorWindow
 
                 EditorGUILayout.LabelField($"{name} {version}");
 
+                var packageAsset = info.PackageAsset;
+                EditorGUILayout.ObjectField(packageAsset, typeof(TextAsset), false);
 
                 if (!isTagExists)
                 {

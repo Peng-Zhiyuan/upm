@@ -50,4 +50,16 @@ public class UpmGitPackageInfo
         var isSuccess = UpmGitUtil.CreateTag(tagName);
         return isSuccess;
     }
+
+    public TextAsset PackageAsset
+    {
+        get
+        {
+            var packageDiPath = this.nativePackageInfo.assetPath;
+            var packageJsonPath = $"{packageDiPath}/package.json";
+            Debug.Log(packageJsonPath);
+            var asset = AssetDatabase.LoadAssetAtPath(packageJsonPath, typeof(TextAsset)) as TextAsset;
+            return asset;
+        }
+    }
 }
