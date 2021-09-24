@@ -1,0 +1,9 @@
+{
+  "name": "com.pzy.bundlesetter",
+  "version": "1.0.0",
+  "displayName": "Bundle Setter",
+  "author": {
+    "name": "pzy",
+    "email": "460424301@qq.com"
+  }
+}
