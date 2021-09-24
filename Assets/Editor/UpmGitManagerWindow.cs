@@ -62,7 +62,7 @@ public class UpmGitManagerWindow : EditorWindow
                 }
                 else if(isTagExists == false)
                 {
-                    if (GUILayout.Button("Release"))
+                    if (GUILayout.Button("Release " + version))
                     {
                         info.TryCreateReleaseTagInBackground();
                     }
