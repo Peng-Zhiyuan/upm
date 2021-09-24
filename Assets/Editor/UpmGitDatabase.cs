@@ -22,6 +22,12 @@ public static class UpmGitDatabase
         {
             var package = new UpmGitPackageInfo(one);
             ret.Add(package);
+
+            // 后台获取是否有 release tag
+            package.GetIsReleaseTagExistsInBackground();
+
+            // 后台获取是否已发布到 openupm
+            package.GetIsReleasedOnOpenUpmInBackground();
         }
         packageInfoList = ret;
         var count = list.Count;

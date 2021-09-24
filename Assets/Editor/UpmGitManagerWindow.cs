@@ -40,25 +40,47 @@ public class UpmGitManagerWindow : EditorWindow
                 var version = info.nativePackageInfo.version;
 
                 var releaseTagName = info.ReleaseTagName;
-                var isTagExists = info.IsReleaseTagExists;
+                var isTagExists = info.isReleaseTagExists;
 
                 EditorGUILayout.BeginHorizontal();
 
+                // 显示标签
                 EditorGUILayout.LabelField($"{name} {version}");
 
+                // package 文件引用
                 var packageAsset = info.PackageAsset;
                 EditorGUILayout.ObjectField(packageAsset, typeof(TextAsset), false);
 
-                if (!isTagExists)
+                // 发布按钮
+                if(isTagExists == null)
+                {
+                    GUILayout.Label("...");
+                }
+                else if(isTagExists == true)
+                {
+                    GUILayout.Label(" ");
+                }
+                else if(isTagExists == false)
                 {
                     if (GUILayout.Button("Release"))
                     {
-                        var success = info.CreateReleaseTag();
-                        if(success)
-                        {
-                            info.IsReleaseTagExists = true;
-                        }
+                        info.TryCreateReleaseTagInBackground();
                     }
+                }
+
+                // 是否已发布到 openupm
+                var onOpenUpm = info.isReleasedOnOpenUpm;
+                if (onOpenUpm == null)
+                {
+                    GUILayout.Label("...");
+                }
+                else if (onOpenUpm == true)
+                {
+                    GUILayout.Label(" ");
+                }
+                else if (onOpenUpm == false)
+                {
+                    GUILayout.Label("Not Found On OpenUpm");
                 }
 
 

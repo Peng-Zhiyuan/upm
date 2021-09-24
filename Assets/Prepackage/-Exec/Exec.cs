@@ -6,7 +6,7 @@ using System;
 using UnityEditor;
 using System.Diagnostics;
 using System.Linq;
-
+using System.Threading.Tasks;
 
 public class Exec
 {
@@ -19,7 +19,7 @@ public class Exec
 	/// <param name="ignoreError">treat error log as normal log</param>
 	/// <param name="output">all normal log and error log</param>
 	/// 
-	public static int Run(string exec, string argument, bool unityPrintOutput, out string output, bool ignoreError = false, bool hasOutput = true)
+	public static Task<ExecResult> RunAsync(string exec, string argument, bool unityPrintOutput, bool ignoreError = false, bool collectOutput = true)
 	{
 		string s = "";
 		System.Diagnostics.Process p = new System.Diagnostics.Process ();
@@ -41,7 +41,10 @@ public class Exec
 			// print log
 			if(unityPrintOutput)
             {
+				var temp = Application.stackTraceLogType;
+				Application.stackTraceLogType = StackTraceLogType.None;
 				UnityEngine.Debug.Log(e.Data);
+				Application.stackTraceLogType = temp;
 			}
 			
 			//export log
@@ -49,7 +52,7 @@ public class Exec
 				
 				
 			// get output
-			if(hasOutput)
+			if(collectOutput)
 			{
 				s += e.Data.ToString() + "\n";
 			}
@@ -70,32 +73,45 @@ public class Exec
 				}
 			}
 			// get output
-			if(hasOutput)
+			if(collectOutput)
 			{
 				s += e.Data.ToString() + "\n";
 			}
 				
 		};
-		p.Start ();
-			
-			
-		p.BeginOutputReadLine ();
+
+
+		var tcs = new TaskCompletionSource<ExecResult>();
+		
+		p.Exited += (sender, arg) =>
+		{
+			var exitCode = p.ExitCode;
+			var output = s;
+			var result = new ExecResult();
+			result.ExitCode = exitCode;
+			result.output = output;
+
+			tcs.SetResult(result);
+		};
+
+
+		p.EnableRaisingEvents = true;
+
+		p.Start();
+
+
+		p.BeginOutputReadLine();
 		p.BeginErrorReadLine();
 
-		var temp = Application.stackTraceLogType;
-		Application.stackTraceLogType = StackTraceLogType.None;
-		p.WaitForExit();
-		Application.stackTraceLogType = temp;
+	
 
-		output = s;
-		return p.ExitCode;
+		return tcs.Task;
 			
 	}
 		
-	public static int Run(string exec, string argument, bool ignoreError = false)
+	public static Task<ExecResult> RunAsync(string exec, string argument, bool ignoreError = false)
 	{
-		string ret = null;
-		return Run(exec, argument, true, out ret, ignoreError, false);
+		return RunAsync(exec, argument, true, ignoreError, false);
 	}
 		
 	//	public static int RunEx(string Exec, bool ignoreError, params string[] arguments)
@@ -105,11 +121,9 @@ public class Exec
 	//		return Run(Exec, escapedArgument, ignoreError);
 	//	}
 		
-	public static string RunGetOutput(string exec, string argument, bool ignoreError = false)
+	public static Task<ExecResult> RunGetOutput(string exec, string argument, bool ignoreError = false)
 	{
-		string ret = "";
-		Run(exec, argument, false, out ret, ignoreError, true);
-		return ret;
+		return RunAsync(exec, argument, false, ignoreError, true);
 	}
 		
 	//	public static string EscapeBlank(string origin)
@@ -121,3 +135,8 @@ public class Exec
 }
 
 
+public class ExecResult
+{
+	public int ExitCode;
+	public string output;
+}

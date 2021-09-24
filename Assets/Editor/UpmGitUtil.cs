@@ -50,9 +50,10 @@ public static class UpmGitUtil
         return tag;
     }
 
-    public static bool IsGitTagExists(string tagName)
+    public static async Task<bool> GetIsGitTagExistsAsync(string tagName)
     {
-        var output = Exec.RunGetOutput("git", $"tag -l \"{tagName}\"");
+        var result = await Exec.RunGetOutput("git", $"tag -l \"{tagName}\"");
+        var output = result.output;
         var trimed = output.Trim();
         if(trimed == tagName)
         {
@@ -65,9 +66,10 @@ public static class UpmGitUtil
         
     }
 
-    public static bool CreateTag(string tagName)
+    public static async Task<bool> CreateTagAsync(string tagName)
     {
-        var code = Exec.Run("git", $"tag \"{tagName}\"");
+        var result = await Exec.RunAsync("git", $"tag \"{tagName}\"");
+        var code = result.ExitCode;
         if(code != 0)
         {
             Debug.LogError("git tag not success");
@@ -76,6 +78,22 @@ public static class UpmGitUtil
         return true;
     }
 
+    public static async Task<bool> GetIsPackageExistsOnOpenUpmAsync(string packageName)
+    {
+        var result = await ExecQueue.ExecInQueue("openupm", $"search \"{packageName}\"");
+        var output = result.output;
+        var trimed = output.Trim();
+//        Debug.LogError(trimed);
+        var firstCha = trimed[0];
+        if (firstCha == '┌')
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 }
 
 class Waiter

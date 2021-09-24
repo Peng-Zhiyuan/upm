@@ -15,23 +15,14 @@ public class UpmGitPackageInfo
 
     public PackageInfo nativePackageInfo;
 
-    bool? _isReleaseTagExists;
-    public bool IsReleaseTagExists
+    public bool? isReleaseTagExists;
+
+
+    public async void GetIsReleaseTagExistsInBackground()
     {
-        get
-        {
-            if(_isReleaseTagExists == null)
-            {
-                var releaseTagName = this.ReleaseTagName;
-                var isTagExists = UpmGitUtil.IsGitTagExists(releaseTagName);
-                this._isReleaseTagExists = isTagExists;
-            }
-            return this._isReleaseTagExists.Value;
-        }
-        set
-        {
-            _isReleaseTagExists = value;
-        }
+        var releaseTagName = this.ReleaseTagName;
+        var isTagExists = await UpmGitUtil.GetIsGitTagExistsAsync(releaseTagName);
+        this.isReleaseTagExists = isTagExists;
     }
 
     public string ReleaseTagName
@@ -44,11 +35,19 @@ public class UpmGitPackageInfo
         }
     }
 
-    public bool CreateReleaseTag()
+    public async void TryCreateReleaseTagInBackground()
     {
         var tagName = this.ReleaseTagName;
-        var isSuccess = UpmGitUtil.CreateTag(tagName);
-        return isSuccess;
+        var isSuccess = await UpmGitUtil.CreateTagAsync(tagName);
+        if(isSuccess)
+        {
+            this.isReleaseTagExists = true;
+        }
+        else
+        {
+            Debug.LogError("create release tag error");
+        }
+        
     }
 
     public TextAsset PackageAsset
@@ -62,4 +61,14 @@ public class UpmGitPackageInfo
             return asset;
         }
     }
+
+    public bool? isReleasedOnOpenUpm;
+
+    public async void GetIsReleasedOnOpenUpmInBackground()
+    {
+        var packageName = this.nativePackageInfo.name;
+        var b = await UpmGitUtil.GetIsPackageExistsOnOpenUpmAsync(packageName);
+        this.isReleasedOnOpenUpm = b;
+    }
+
 }
