@@ -1,0 +1,13 @@
+{
+  "name": "com.pzy.third.xlua",
+  "version": "1.0.0",
+  "displayName": "XLua",
+  "author": {
+    "name": "pzy",
+    "email": "460424301@qq.com"
+  },
+  "dependencies": {
+  },
+  "unity": "2019.1",
+  "description": ""
+}
