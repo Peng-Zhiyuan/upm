@@ -1,0 +1,56 @@
+//
+//  NSObject_GameAppController.h
+//  Unity-iPhone
+//
+//  Created by zhiyuan.peng on 2018/1/14.
+//
+//
+
+#import <objc/message.h>
+#import <Foundation/Foundation.h>
+#import "UnityAppController.h"
+#import "GameController.h"
+#import "WXApi.h"
+#import "facekingDept-Swift.h"
+
+@implementation GameController
+
+- (void)application:(UIApplication*)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData*)deviceToken
+{
+    [super application:application didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
+}
+
+- (void)application:(UIApplication*)application didFailToRegisterForRemoteNotificationsWithError:(NSError*)error
+{
+    [super application:application didFailToRegisterForRemoteNotificationsWithError:error];
+}
+
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<NSString *,id> *)options{
+    return [WXApi handleOpenURL:url delegate:[WXProxy getInstance]];
+}
+
+- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
+{
+    //
+    //[WXApi registerApp:@"wx955696b44a9b141b"];
+    [WXApi registerApp:@"wx7c36eb92fbc40a24"];
+    
+    return [super application:application didFinishLaunchingWithOptions:launchOptions];
+}
+
+- (void)applicationDidBecomeActive:(UIApplication*)application
+{
+    [super applicationDidBecomeActive:application];
+}
+
+
+- (void)applicationWillEnterForeground:(UIApplication *)application
+{
+    
+}
+
+
+
+
+
+@end

@@ -64,6 +64,9 @@ public class IOSBuild
 		// pre build
 		NativeBuilderPluginManager.NotifyPostBuild();
 
+		// 确保没有任何失败标记
+		NativeBuilderPluginManager.SureNotMarkedFail();
+
 		Debug.Log("complete");
 	}
 }

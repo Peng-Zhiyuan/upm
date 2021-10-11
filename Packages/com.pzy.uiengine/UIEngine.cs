@@ -407,7 +407,7 @@ public class UIEngine : SceneObject<UIEngine>
 
     public Floating ShowFloating (string name, Page containerPage = null, UILayer layer = UILayer.FloatingLayer, object param = null) 
     {
-        // Debug.Log($"[UIEngine] Show Floating {name}");
+        Debug.Log($"[UIEngine] Show Floating {name}");
         // 如果已经在显示了，线隐藏再重新显示
         var old = this.FindFloating(name);
         if(old != null)

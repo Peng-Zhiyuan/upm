@@ -85,17 +85,28 @@ public class MainConsoleWind : MonoBehaviour
     }
 
     static List<Type> GetCmdClassTypes(){
-        List<Type> types = new List<Type>();
-        Assembly asm = Assembly.GetExecutingAssembly();
+        // List<Type> types = new List<Type>();
         
-        foreach (Type type in asm.GetTypes())
-        {
-            if(type.IsSubclassOf(consoleCmdClassType) || type == consoleCmdClassType){
-                types.Add(type);
-            }
-        }
-        types.Remove(consoleCmdClassType);
-        types.Insert(0, consoleCmdClassType);
+        // var assemblyList = AppDomain.CurrentDomain.GetAssemblies();
+        // foreach(var asm in assemblyList){            
+        //     var asmName = asm.GetName().Name;
+        //     var isUseless = IsUselessAssembly(asmName);
+        //     if(isUseless){
+        //         continue;
+        //     }
+        //     UnityEngine.Debug.Log(asm.GetName());
+        //     foreach (Type type in asm.GetTypes())
+        //     {
+        //         if(type.IsSubclassOf(consoleCmdClassType) || type == consoleCmdClassType){
+        //             types.Add(type);
+        //         }
+        //     }
+        //     types.Remove(consoleCmdClassType);
+        //     types.Insert(0, consoleCmdClassType);
+        // }
+        var types = ReflectionUtil.GetSubClassesInAllAssemblies<GameConsoleCmds>();
+        types.Add(typeof(GameConsoleCmds));
+        return types;
         return types;
     }
 

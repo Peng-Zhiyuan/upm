@@ -14,9 +14,9 @@ public class RecycledGameObject : MonoBehaviour
 #endif
 {
 
-#if ODIN_INSPECTOR
+    #if ODIN_INSPECTOR
     [ReadOnly]
-#endif
+    #endif
     public GameObject prefab;
 
     public GameObject Prefab

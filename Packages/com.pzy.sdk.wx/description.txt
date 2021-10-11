@@ -1,0 +1,78 @@
+﻿原始文档：
+https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&t=resource/res_list&verify=1&id=1417694084&token=&lang=zh_CN
+
+====================
+IOS:
+====================
+
+1. GameController设置参见范例文件
+
+2. Info.plist设置：
+LSApplicationQueriesSchemes weixin
+
+3.schame设置参见图片 smaple.png
+
+4.需要库
+SystemConfiguration.framework, libz.dylib, libsqlite3.0.dylib, libc++.dylib, Security.framework, CoreTelephony.framework, CFNetwork.framework，CoreGraphics.framework
+
+5.other flag添加 -ObjC -all_load
+
+6.swift 引用文件加入 #import "WXApi.h"
+
+
+
+
+====================
+Android:
+====================
+
+* 需要在原生 AndroidManifest 中配置 微信api activity
+
+    <!-- wx -->
+    <activity android:name="${package}.wxapi.WXEntryActivity" android:label="@string/app_name" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:exported="true" android:taskAffinity="net.sourceforge.simcpux" android:launchMode="singleTask">
+    </activity>
+    <!-- end wx -->
+
+* 需要在原声工程中，新建微信api acitivity
+
+package ${package}.wxapi;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.os.PersistableBundle;
+import android.util.Log;
+
+import com.tencent.mm.opensdk.modelbase.BaseReq;
+import com.tencent.mm.opensdk.modelbase.BaseResp;
+import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
+
+import bridgeClass.WXProxy;
+
+
+public class WXEntryActivity extends Activity implements IWXAPIEventHandler
+{
+    String TAG = "WXEntryActivity";
+    @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        Log.d(TAG, "onCreate");
+        super.onCreate(savedInstanceState);
+        WXProxy.Companion.getApi().handleIntent(getIntent(), this);
+    }
+    
+    @Override
+    public void onReq(BaseReq var1)
+    {
+        Log.d(TAG, "onReq");
+        WXProxy.Companion.onReq(var1);
+        finish();
+    }
+    @Override
+    public void onResp(BaseResp var1)
+    {
+        Log.d(TAG, "onResp");
+        WXProxy.Companion.onResp(var1);
+        finish();
+    }
+
+}

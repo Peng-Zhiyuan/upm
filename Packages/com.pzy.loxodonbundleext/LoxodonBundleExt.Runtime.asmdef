@@ -1,0 +1,17 @@
+{
+    "name": "LoxodonBundleExt.Runtime",
+    "references": [
+        "GUID:56e9c274313824a989393df68af8e92d",
+        "GUID:26f0e8542e5a544b399e8d699a2fb38b",
+        "GUID:01435ba3de36f4fae8ef1d0ceabdfd0a"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

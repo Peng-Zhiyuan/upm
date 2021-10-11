@@ -43,4 +43,13 @@ public static class DriverManager
 			driver.Handle(msg);
         }
     }
+
+	public async static Task SendMessageAsync(string msg)
+    {
+		foreach(var kv in typeToServiceDic)
+        {
+			var driver = kv.Value;
+			await driver.HandleAsync(msg);
+        }
+    }
 }

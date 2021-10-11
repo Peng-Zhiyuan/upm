@@ -8,6 +8,36 @@ using System.Reflection;
 
 public static class JsonUtil
 {
+    
+    public static string ToJsonStr(this Dictionary<string, List<string>> dic){
+        return ToJson(dic).ToJson();
+    }
+
+    public static JsonData ToJson(this Dictionary<string, List<string>> dic){
+        var data = new JsonData();
+        foreach(var lable in dic.Keys){
+            data[lable] = new JsonData();
+            foreach(var address in dic[lable]){
+                data[lable].Add(address);
+            }
+        }
+        return data;
+    }
+
+    public static Dictionary<string, List<string>> JsonStr2LabelDictionary(string strJson){
+        Dictionary<string, List<string>> result = new Dictionary<string, List<string>>();
+        JsonData jd = JsonMapper.Instance.ToObject(strJson);
+        var dic = jd as IDictionary;
+        foreach(var k in dic.Keys){
+            result[k.ToString()] = new List<string>();
+            var array = dic[k] as JsonData;
+            foreach(var i in array){
+                result[k.ToString()].Add(i.ToString());
+            }
+        }
+        return result;
+    }
+
     public static object JsonDataToObject(Type type, JsonData jd)
     {
         if (type == typeof(int))

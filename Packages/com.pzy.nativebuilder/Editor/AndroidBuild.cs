@@ -6,6 +6,7 @@ using System.IO;
 using System;
 using System.Linq;
 using NativeBuilder;
+//using XLua;
 
 
 
@@ -70,6 +71,9 @@ public static class AndroidBuild
 
 		// pre build
 		NativeBuilderPluginManager.NotifyPostBuild();
+
+		// 检查是否有失败标记
+		NativeBuilderPluginManager.SureNotMarkedFail();
 
 		DateTime endTime = DateTime.Now;
 		var useTime = endTime - startTime;

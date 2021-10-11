@@ -1,0 +1,22 @@
+//
+//  Header.h
+//  Unity-iPhone
+//
+//  Created by zhiyuan.peng on 2018/1/14.
+//
+//
+
+#ifndef Header_h
+#define Header_h
+
+//#import <UzoneSDK/UzoneSDK.h>
+#import "UnityAppController.h"
+#import "WXApi.h"
+
+@interface GameController : UnityAppController<WXApiDelegate>
+
+
+@end
+
+
+#endif /* Header_h */

@@ -1,5 +1,5 @@
 {
-    "name": "LitJson.Runtime",
+    "name": "CustomLitJson.Runtime",
     "references": [
         "GUID:56e9c274313824a989393df68af8e92d"
     ],

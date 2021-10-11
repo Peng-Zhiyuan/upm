@@ -1,14 +1,14 @@
 {
   "name": "com.pzy.uiengine",
-  "version": "1.0.4",
+  "version": "1.0.2",
   "displayName": "UI Engine",
   "author": {
     "name": "pzy",
     "email": "460424301@qq.com"
   },
   "dependencies": {
-    "com.pzy.stuffobject": "1.0.1",
-    "com.pzy.gameobjectpool": "1.0.1",
+    "com.pzy.stuffobject": "1.0.0",
+    "com.pzy.gameobjectpool": "1.0.0",
     "com.pzy.utils": "1.0.0"
   },
   "unity": "2019.1",

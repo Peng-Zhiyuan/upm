@@ -4,6 +4,8 @@ using UnityEngine;
 using System;
 using System.Reflection;
 using System.Linq;
+using UnityEditor;
+using UnityEditor.Callbacks;
 
 public class NativeBuilderPluginManager
 {
@@ -21,15 +23,27 @@ public class NativeBuilderPluginManager
 		}
     }
 
+	static bool isMarkedFail = false;
 
 	public static void NotifyPreBuild()
     {
-		foreach(var plugin in PluginList)
+		isNotifiedFirstSceneProcessed = false;
+		isMarkedFail = false;
+
+		foreach (var plugin in PluginList)
         {
 			var typeName = plugin.GetType().Name;
 			Debug.Log($"NativeBuilder: {typeName} OnPreBuild");
 			plugin.OnPreBuild();
 		}
+    }
+
+	public static void SureNotMarkedFail()
+    {
+		if(isMarkedFail)
+        {
+			throw new Exception("[NativeBuilderPluginManager] marked fail. search Exception to find error");
+        }
     }
 
 	public static void NotifyPostBuild()
@@ -39,6 +53,16 @@ public class NativeBuilderPluginManager
 			var typeName = plugin.GetType().Name;
 			Debug.Log($"NativeBuilder: {typeName} OnPostBuild");
 			plugin.OnPostBuild();
+		}
+	}
+
+	public static void NotifyFirstSceneProccesed()
+	{
+		foreach (var plugin in PluginList)
+		{
+			var typeName = plugin.GetType().Name;
+			Debug.Log($"NativeBuilder: {typeName} OnFirstSceneProccessed");
+			plugin.OnFirstSceneProccessed();
 		}
 	}
 
@@ -72,5 +96,31 @@ public class NativeBuilderPluginManager
 			ret.AddRange(list);
 		}
 		return ret;
+	}
+
+	static bool isNotifiedFirstSceneProcessed = false;
+	/// <summary>
+	/// 当处理完一个场景，
+	/// 这时目标平台的程序集已经生成
+	/// </summary>
+	[PostProcessScene]
+	public static void PostProcessScene()
+	{
+
+		if (isNotifiedFirstSceneProcessed)
+		{
+			return;
+		}
+		isNotifiedFirstSceneProcessed = true;
+
+		try
+        {
+			NotifyFirstSceneProccesed();
+		}
+		catch
+        {
+			isMarkedFail = true;
+			throw;
+		}
 	}
 }
