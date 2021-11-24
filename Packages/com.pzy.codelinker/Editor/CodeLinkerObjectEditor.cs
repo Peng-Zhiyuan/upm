@@ -25,7 +25,7 @@ namespace ElementSystem
             //var monoScript = AssetDatabase.LoadAssetAtPath(filePath, typeof(MonoScript));
             EditorGUI.BeginDisabledGroup(true);
             //EditorGUILayout.ObjectField("Linker File", monoScript, typeof(MonoScript), false);
-            EditorGUILayout.TextField("Liner File", filePath);
+            EditorGUILayout.TextField("Linker File", filePath);
             EditorGUI.EndDisabledGroup();
 
             //base.OnInspectorGUI();

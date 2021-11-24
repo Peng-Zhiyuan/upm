@@ -1,0 +1,9 @@
+{
+    "name" : "com.pzy.projectbuildpipline",
+    "version" : "1.0.0" ,
+    "displayName" : "Project Build Pipline",
+    "author": {
+        "name": "pzy",
+        "email": "460424301@qq.com"
+      }
+}

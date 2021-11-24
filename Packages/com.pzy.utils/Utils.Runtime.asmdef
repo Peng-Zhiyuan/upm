@@ -1,6 +1,8 @@
 {
     "name": "Utils.Runtime",
-    "references": [],
+    "references": [
+        "GUID:9b5fdad621648440e94e6f08ce1946d8"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

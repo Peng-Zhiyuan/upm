@@ -38,6 +38,18 @@ public static class DictionaryUtil
         return list;
     }
 
+    public static Dictionary<TInnerKey, TElement> GetOrCreateDic<TK, TInnerKey, TElement>(Dictionary<TK, Dictionary<TInnerKey, TElement>> dic, TK key)
+    {
+        Dictionary<TInnerKey, TElement> innerDic;
+        dic.TryGetValue(key, out innerDic);
+        if (innerDic == null)
+        {
+            innerDic = new Dictionary<TInnerKey, TElement>();
+            dic[key] = innerDic;
+        }
+        return innerDic;
+    }
+
     public static List<TV> GetValueList<TK, TV>(Dictionary<TK, TV> dic)
     {
         var ret = new List<TV>();

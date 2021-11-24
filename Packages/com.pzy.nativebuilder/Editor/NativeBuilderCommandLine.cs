@@ -15,9 +15,6 @@ public class NativeBuilderCommandLine
     /// 
     public static void Build()
     {
-        // 命令行参数检查
-        var args = System.Environment.GetCommandLineArgs ();
-
         // 默认参数
         var id = "";
         var scene = "";
@@ -35,7 +32,7 @@ public class NativeBuilderCommandLine
         //PlayerSettings.Android.keyaliasPass = "ginicats";
         
         // 处理命令行选项
-        ReadOptions((option, arg) =>
+        CommandLineUtil.ReadOptions((option, arg) =>
             {
                 switch(option)
                 {
@@ -349,25 +346,6 @@ public class NativeBuilderCommandLine
             case BuildTarget.NoTarget:
             default:
                 return BuildTargetGroup.Standalone;
-        }
-    }
-
-    private static void ReadOptions(Action<string, string> onOption)
-    {
-        var args = System.Environment.GetCommandLineArgs ();
-        for (int i = 0; i < args.Length; i++) {
-            if (args [i].StartsWith("-", StringComparison.Ordinal)) {
-                string option = args[i];
-                string arg = "";
-                if (i + 1 < args.Length)
-                {
-                    if (!args[i + 1].StartsWith("-", StringComparison.Ordinal))
-                    {
-                        arg = args[i + 1];
-                    }
-                }
-                onOption(option, arg);
-            }
         }
     }
 

@@ -1,6 +1,9 @@
 {
     "name": "NativeBuilder.Editor",
-    "references": [],
+    "rootNamespace": "",
+    "references": [
+        "GUID:01435ba3de36f4fae8ef1d0ceabdfd0a"
+    ],
     "includePlatforms": [
         "Editor"
     ],

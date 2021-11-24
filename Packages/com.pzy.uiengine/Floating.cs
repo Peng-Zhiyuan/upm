@@ -6,8 +6,6 @@ public class Floating : View
 {
     public virtual void OnShow(object param){}
 
-    public virtual void OnAfterShow(){}
-
     public virtual void OnHide(){}
 
     public void Hide()

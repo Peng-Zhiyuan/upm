@@ -2,25 +2,29 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
-
-public static class Cmd
+namespace EtuUnity
 {
-    public static void ReadOptions(Action<string, string> onOption)
+    public static class Cmd
     {
-        var args = System.Environment.GetCommandLineArgs ();
-        Debug.Log(string.Join(" ", args));
-        for (int i = 0; i < args.Length; i++) {
-            if (args [i].StartsWith("-", StringComparison.Ordinal)) {
-                string option = args[i];
-                string arg = "";
-                if (i + 1 < args.Length)
+        public static void ReadOptions(Action<string, string> onOption)
+        {
+            var args = System.Environment.GetCommandLineArgs();
+            Debug.Log(string.Join(" ", args));
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i].StartsWith("-", StringComparison.Ordinal))
                 {
-                    if (!args[i + 1].StartsWith("-", StringComparison.Ordinal))
+                    string option = args[i];
+                    string arg = "";
+                    if (i + 1 < args.Length)
                     {
-                        arg = args[i + 1];
+                        if (!args[i + 1].StartsWith("-", StringComparison.Ordinal))
+                        {
+                            arg = args[i + 1];
+                        }
                     }
+                    onOption(option, arg);
                 }
-                onOption(option, arg);
             }
         }
     }

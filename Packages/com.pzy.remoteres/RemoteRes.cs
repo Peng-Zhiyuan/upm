@@ -9,10 +9,10 @@ using System.Net;
 using System.Net.Http;
 using System.IO;
 using System.IO.Compression;
-using ETModel;
 
 public static class RemoteRes
 {
+
     private static AudioType GetAudioTypeByExtension(string path)
     {
         var extension = Path.GetExtension(path);
@@ -61,8 +61,58 @@ public static class RemoteRes
         await Task.WhenAll(taskList);
     }
 
+    static object LoadByLocalSimulation(Type type, string remotePath)
+    {
+        var ext = Path.GetExtension(remotePath);
+        if(!string.IsNullOrEmpty(ext))
+        {
+            remotePath = remotePath.Replace(ext, "");
+        }
+        var resourcePath = $"RemoteResSimulation/{remotePath}";
+        var asset = Resources.Load(resourcePath);
+        if(asset == null)
+        {
+            throw new Exception($"[RemoteRes] Resources: {resourcePath} not found");
+        }
+        var assetType = asset.GetType();
+        var requireType = type;
+        if(requireType == typeof(string))
+        {
+            if(assetType != typeof(TextAsset))
+            {
+                throw new Exception($"[RemoteRes] {resourcePath} is not a TextAsset (type: {assetType})");
+            }
+            var textAsset = asset as TextAsset;
+            var text = textAsset.text;
+            return text;
+        }
+        else if(requireType == typeof(byte[]))
+        {
+            if (assetType != typeof(TextAsset))
+            {
+                throw new Exception($"[RemoteRes] {resourcePath} is not a TextAsset (type: {assetType})");
+            }
+            var textAsset = asset as TextAsset;
+            var bytes = textAsset.bytes;
+            return bytes;
+        }
+        else
+        {
+            throw new Exception($"[RemoteRes] remote res type: {requireType} not implement yet");
+        }
+    }
+
     public static async Task<object> LoadAsync(Type type, string remotePath, CacheType cacheType = CacheType.File, bool forceOrigin = false, Action<float> onProgressHandler = null)
     {
+        // 如果开启了模拟模式
+        if(RemoteResDashboardSettings.IsSimulationRemoteRes)
+        {
+            Debug.Log($"[RemoteRes] load {remotePath} (from Simulation)");
+            var obj = LoadByLocalSimulation(type, remotePath);
+            return obj;
+        }
+
+
         if(cacheType == CacheType.Memory)
         {
             var isCached = IsResObjectInMemory(remotePath);
@@ -136,23 +186,33 @@ public static class RemoteRes
         return ret as T;
     }
 
-    public static string RootDir
+    public static string EnvName
     {
         get
         {
             var envName = EnvManager.Env;
+            return envName;
+        }
+
+    }
+
+    public static string RootDir
+    {
+        get
+        {
+            var envName = EnvName;
             return $"RemoteRes/{envName}";
         }
     }
 
-    public static void DeleteFileCacheOfRemoteDir(string remoteDir, string expectPath)
+    public static void DeleteFileCacheOfRemoteDir(string remoteDir, string exludePath)
     {
         var localDirPath = $"{RootDir}/{remoteDir}";
-        var expectLocalPath = $"{RootDir}/{expectPath}";
+        var exludeLocalPath = $"{RootDir}/{exludePath}";
         var list = FileManager.GetFileList(localDirPath);
         foreach(var path in list)
         {
-            if(path != expectLocalPath)
+            if(path != exludeLocalPath)
             {
                 Debug.Log($"[RemoteRes] delete {path}");
                 FileManager.DeleteFile(path);
@@ -177,21 +237,21 @@ public static class RemoteRes
 
     private static bool IsResBytesInFile(string remotePath)
     {
-        var envName = EnvManager.Env;
+        var envName = EnvName;
         var filePath = $"RemoteRes/{envName}/{remotePath}";
         return FileManager.HasFile(filePath);
     }
 
     private static void WriteResBytesToFile(string remotePath, byte[] bytes)
     {
-        var envName = EnvManager.Env;
+        var envName = EnvName;
         var filePath = $"RemoteRes/{envName}/{remotePath}";
         FileManager.WriteBytes(filePath, bytes);
     }
 
     private static byte[] ReadResBytesFromFile(string remotePath)
     {
-        var envName = EnvManager.Env;
+        var envName = EnvName;
         var filePath = $"RemoteRes/{envName}/{remotePath}";
         return FileManager.ReadBytes(filePath);
     }
@@ -310,21 +370,19 @@ public static class RemoteRes
         }        
     }
 
-    public static string GetActualUrl(string pathFromResDir, bool forceOrigin){
-        var url = "";
-        if(forceOrigin)
+    public static string BaseUrl
+    {
+        get
         {
-            // use origin
-            var remoteResUrl = EnvUtil.RemoteResOrigin;
-            url = $"{remoteResUrl}/{pathFromResDir}";
+            var url = EnvManager.GetConfigOfCurrentEnv("remoteRes");
+            return url;
         }
-        else
-        {
-            // use cdn
-            var assetBundleServerUrl = EnvUtil.RemoteResCdn;
-            // url = assetBundleServerUrl + "/" + pathFromResDir;
-            url = $"{assetBundleServerUrl}/{pathFromResDir}";
-        }
+    }
+
+    public static string GetActualUrl(string pathFromResDir, bool forceOrigin)
+    {
+        var baseUrl = BaseUrl;
+        var url = $"{baseUrl}/{pathFromResDir}";
         return url;
     }
 
@@ -337,51 +395,53 @@ public static class RemoteRes
         HttpClient clinet = new HttpClient(handler);
         clinet.DefaultRequestHeaders.Add("Accept-Encoding", "gzip");
         var result = await clinet.GetAsync(url);
-        if(!result.IsSuccessStatusCode){            
+        if (!result.IsSuccessStatusCode)
+        {
             var msg = $"[{nameof(RemoteRes)}] Http error in load {url}, code: {result.StatusCode}";
-            throw new GameException(ExceptionLevel.Dialog, msg);
+            //throw new GameException(ExceptionLevel.Dialog, msg);
+            throw new Exception(msg);
         }
         var data = await result.Content.ReadAsByteArrayAsync();
         Debug.Log($"[GetHttpByteData] Http data length : {data.Length}");
         return data;
     }
 
-    public static Task<byte[]> RequestByOssOld(string pathFromResDir, bool forceOrigin, Action<float> onProgressHandller)
-    {
-        var tcs = new TaskCompletionSource<byte[]>();
-        var url = GetActualUrl(pathFromResDir, forceOrigin);
+    //public static Task<byte[]> RequestByOssOld(string pathFromResDir, bool forceOrigin, Action<float> onProgressHandller)
+    //{
+    //    var tcs = new TaskCompletionSource<byte[]>();
+    //    var url = GetActualUrl(pathFromResDir, forceOrigin);
 
-        Debug.Log($"[{nameof(RemoteRes)}] LoadAsBytesAsync: {url}");
-        var request = UnityWebRequest.Get(url);
-        request.downloadHandler = new DownloadHandlerBuffer();
-        // request.SetRequestHeader("Accept-Encoding", "gzip");
-        Debug.LogError(request.GetRequestHeader("Accept-Encoding"));
-        var httpTask = HttpQueueManager.Stuff.Enqueue(request);
-        httpTask.Completed += ()=>
-        {
-            var code = request.responseCode;
-            if (request.isHttpError)
-            {
-                var msg = $"[{nameof(RemoteRes)}] Http error in load {url}, code: {code} error: {request.error}";
-                var e = new GameException(ExceptionLevel.Dialog, msg);
-                tcs.SetException(e);
-            }
-            else if (request.isNetworkError)
-            {
-                var msg = $"[{nameof(RemoteRes)}] network error in load {url}, code: {code} error: {request.error}";
-                var e = new GameException(ExceptionLevel.Dialog, msg);
-                tcs.SetException(e);
-            }
-            else
-            {
-                Debug.Log($"[{nameof(RemoteRes)}] Compleate: {url}");
-                var bytes = GetHttpByteData(request);
-                tcs.SetResult(bytes);
-            }
-        };
-        httpTask.Updated = onProgressHandller;
-        return tcs.Task;
-    }
+    //    Debug.Log($"[{nameof(RemoteRes)}] LoadAsBytesAsync: {url}");
+    //    var request = UnityWebRequest.Get(url);
+    //    request.downloadHandler = new DownloadHandlerBuffer();
+    //    // request.SetRequestHeader("Accept-Encoding", "gzip");
+    //    Debug.LogError(request.GetRequestHeader("Accept-Encoding"));
+    //    var httpTask = HttpQueueManager.Stuff.Enqueue(request);
+    //    httpTask.Completed += ()=>
+    //    {
+    //        var code = request.responseCode;
+    //        if (request.isHttpError)
+    //        {
+    //            var msg = $"[{nameof(RemoteRes)}] Http error in load {url}, code: {code} error: {request.error}";
+    //            var e = new GameException(ExceptionLevel.Dialog, msg);
+    //            tcs.SetException(e);
+    //        }
+    //        else if (request.isNetworkError)
+    //        {
+    //            var msg = $"[{nameof(RemoteRes)}] network error in load {url}, code: {code} error: {request.error}";
+    //            var e = new GameException(ExceptionLevel.Dialog, msg);
+    //            tcs.SetException(e);
+    //        }
+    //        else
+    //        {
+    //            Debug.Log($"[{nameof(RemoteRes)}] Compleate: {url}");
+    //            var bytes = GetHttpByteData(request);
+    //            tcs.SetResult(bytes);
+    //        }
+    //    };
+    //    httpTask.Updated = onProgressHandller;
+    //    return tcs.Task;
+    //}
 
     // private static Task<byte[]> Request(string pathFromResDir, bool forceOrigin)
     // {

@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LocalizationCmds : GameConsoleCmds
+[ConsoleCommands]
+public static class LocalizationCmds
 {
     public static string ShowKeyLocalText_Help = "显示key在当前语言中的本地化字符";
     public static List<string> ShowKeyLocalText_Alias = new List<string>(){"local"};

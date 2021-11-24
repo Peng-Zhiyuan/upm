@@ -1,6 +1,8 @@
 using System.Collections.Generic;
-
-public class CacheWrapper
+namespace EtuUnity
 {
-    public List<TableResult> list;
+    public class CacheWrapper
+    {
+        public List<TableResult> list;
+    }
 }

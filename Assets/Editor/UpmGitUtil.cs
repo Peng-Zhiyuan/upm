@@ -80,7 +80,7 @@ public static class UpmGitUtil
 
     public static async Task<bool> GetIsPackageExistsOnOpenUpmAsync(string packageName)
     {
-        var result = await ExecQueue.ExecInQueue("openupm", $"search \"{packageName}\"");
+        var result = await ExecQueue.ExecInQueue("powershell", $"openupm search \"{packageName}\"");
         var output = result.output;
         var trimed = output.Trim();
 //        Debug.LogError(trimed);

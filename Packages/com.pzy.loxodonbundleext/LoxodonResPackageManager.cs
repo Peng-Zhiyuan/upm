@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine.UI;
-using DG.Tweening;
 using Loxodon.Framework.Asynchronous;
 using Loxodon.Framework.Bundles;
 using Loxodon.Framework.Contexts;

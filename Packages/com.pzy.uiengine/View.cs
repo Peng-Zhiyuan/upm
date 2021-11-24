@@ -5,18 +5,6 @@ using UnityEngine;
 public class View : RecycledGameObject
 {
 
-    public bool Active 
-    {
-        get 
-        {
-            return this.gameObject.activeSelf;
-        }
-        set 
-        {
-            this.gameObject.SetActive(value);
-        }
-    }
-
     private RectTransform _rectTransform;
     public RectTransform rectTransform 
     {

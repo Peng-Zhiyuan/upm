@@ -12,7 +12,7 @@ public static class EnvManager
             var entrace = PlayerPrefs.GetString("env", "");
             if(entrace == "" || !IsEnvValid(entrace))
             {
-                entrace = LuncherManifestManager.Get("env.default");
+                entrace = GameManifestManager.Get("env.default");
             }
             return entrace;
         }
@@ -25,14 +25,14 @@ public static class EnvManager
             }
             PlayerPrefs.SetString("env", value);
             Debug.Log("[EnvManager] env has been set to: " + value);
-            EntraceChnaged?.Invoke(value);
+            EnvChanged?.Invoke(value);
         }
     }
 
 
-    public static Action<string> EntraceChnaged;
+    public static Action<string> EnvChanged;
 
-    public static string GetConfigOfCurrentEntrace(string key)
+    public static string GetConfigOfCurrentEnv(string key)
     {
         var env = Env;
         if(string.IsNullOrEmpty(env))
@@ -42,7 +42,7 @@ public static class EnvManager
 
 
         var fullKey = $"{env}.{key}";
-        var value = LuncherManifestManager.Get(fullKey);
+        var value = GameManifestManager.Get(fullKey);
         return value;
     }
 
@@ -56,7 +56,7 @@ public static class EnvManager
         }
 
         var fullKey = $"{env}.{key}";
-        var value = LuncherManifestManager.GetObject(fullKey);
+        var value = GameManifestManager.GetObject(fullKey);
         return value;
     }
 
@@ -68,7 +68,7 @@ public static class EnvManager
             if(_envList == null)
             {
                 _envList = new List<string>();
-                var str = LuncherManifestManager.Get("env.list");
+                var str = GameManifestManager.Get("env.list");
                 Debug.Log("env.list: " + str);
                 var parts = str.Split(',');
                 foreach (var entrace in parts)

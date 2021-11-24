@@ -1,9 +1,9 @@
-﻿using AssetUsageDetectorNamespace.Extras;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace AssetUsageDetectorNamespace
@@ -11,14 +11,19 @@ namespace AssetUsageDetectorNamespace
 	[Serializable]
 	public class SearchResultDrawParameters
 	{
+		public SearchResult searchResult;
 		public PathDrawingMode pathDrawingMode;
 		public bool showTooltips;
+		public bool noAssetDatabaseChanges;
+		public Rect guiRect;
+		public bool shouldRefreshEditorWindow;
 		public string tooltip;
 
-		public SearchResultDrawParameters( PathDrawingMode pathDrawingMode, bool showTooltips )
+		public SearchResultDrawParameters( PathDrawingMode pathDrawingMode, bool showTooltips, bool noAssetDatabaseChanges )
 		{
 			this.pathDrawingMode = pathDrawingMode;
 			this.showTooltips = showTooltips;
+			this.noAssetDatabaseChanges = noAssetDatabaseChanges;
 		}
 	}
 
@@ -31,7 +36,9 @@ namespace AssetUsageDetectorNamespace
 		public class SerializableResultGroup
 		{
 			public string title;
-			public bool clickable;
+			public SearchResultGroup.GroupType type;
+			public bool isExpanded;
+			public bool pendingSearch;
 
 			public List<int> initialSerializedNodes;
 		}
@@ -47,9 +54,19 @@ namespace AssetUsageDetectorNamespace
 			public List<string> linkDescriptions;
 		}
 
-		private bool success;
+#pragma warning disable 1692
+#pragma warning disable IDE0044
+		private bool success; // This is not readonly so that it can be serialized
+#pragma warning restore IDE0044
+#pragma warning restore 1692
+
 		private List<SearchResultGroup> result;
 		private SceneSetup[] initialSceneSetup;
+
+		private AssetUsageDetector searchHandler;
+		private AssetUsageDetector.Parameters m_searchParameters;
+
+		private float guiHeight; // Prevents scroll view's position from getting reset at domain reload
 
 		private List<SerializableNode> serializedNodes;
 		private List<SerializableResultGroup> serializedGroups;
@@ -58,9 +75,10 @@ namespace AssetUsageDetectorNamespace
 		public SearchResultGroup this[int index] { get { return result[index]; } }
 
 		public bool SearchCompletedSuccessfully { get { return success; } }
-		public bool InitialSceneSetupConfigured { get { return initialSceneSetup != null; } }
+		public bool InitialSceneSetupConfigured { get { return initialSceneSetup != null && initialSceneSetup.Length > 0; } }
+		public AssetUsageDetector.Parameters SearchParameters { get { return m_searchParameters; } }
 
-		public SearchResult( bool success, List<SearchResultGroup> result, SceneSetup[] initialSceneSetup )
+		public SearchResult( bool success, List<SearchResultGroup> result, SceneSetup[] initialSceneSetup, AssetUsageDetector searchHandler, AssetUsageDetector.Parameters searchParameters )
 		{
 			if( result == null )
 				result = new List<SearchResultGroup>( 0 );
@@ -68,23 +86,177 @@ namespace AssetUsageDetectorNamespace
 			this.success = success;
 			this.result = result;
 			this.initialSceneSetup = initialSceneSetup;
+			this.searchHandler = searchHandler;
+			this.m_searchParameters = searchParameters;
+		}
+
+		public void RefreshSearchResultGroup( SearchResultGroup searchResultGroup, bool noAssetDatabaseChanges )
+		{
+			if( searchResultGroup == null )
+			{
+				Debug.LogError( "SearchResultGroup is null!" );
+				return;
+			}
+
+			int searchResultGroupIndex = -1;
+			for( int i = 0; i < result.Count; i++ )
+			{
+				if( result[i] == searchResultGroup )
+				{
+					searchResultGroupIndex = i;
+					break;
+				}
+			}
+
+			if( searchResultGroupIndex < 0 )
+			{
+				Debug.LogError( "SearchResultGroup is not a part of SearchResult!" );
+				return;
+			}
+
+			if( searchResultGroup.Type == SearchResultGroup.GroupType.Scene && EditorApplication.isPlaying && !EditorSceneManager.GetSceneByPath( searchResultGroup.Title ).isLoaded )
+			{
+				Debug.LogError( "Can't search unloaded scene while in Play Mode!" );
+				return;
+			}
+
+			if( searchHandler == null )
+				searchHandler = new AssetUsageDetector();
+
+			SceneSearchMode searchInScenes = m_searchParameters.searchInScenes;
+			Object[] searchInScenesSubset = m_searchParameters.searchInScenesSubset;
+			bool searchInAssetsFolder = m_searchParameters.searchInAssetsFolder;
+			Object[] searchInAssetsSubset = m_searchParameters.searchInAssetsSubset;
+			bool searchInProjectSettings = m_searchParameters.searchInProjectSettings;
+
+			try
+			{
+				if( searchResultGroup.Type == SearchResultGroup.GroupType.Assets )
+				{
+					m_searchParameters.searchInScenes = SceneSearchMode.None;
+					m_searchParameters.searchInScenesSubset = null;
+					m_searchParameters.searchInProjectSettings = false;
+				}
+				else if( searchResultGroup.Type == SearchResultGroup.GroupType.ProjectSettings )
+				{
+					m_searchParameters.searchInScenes = SceneSearchMode.None;
+					m_searchParameters.searchInScenesSubset = null;
+					m_searchParameters.searchInAssetsFolder = false;
+					m_searchParameters.searchInAssetsSubset = null;
+					m_searchParameters.searchInProjectSettings = true;
+				}
+				else if( searchResultGroup.Type == SearchResultGroup.GroupType.Scene )
+				{
+					m_searchParameters.searchInScenes = SceneSearchMode.None;
+					m_searchParameters.searchInScenesSubset = new Object[1] { AssetDatabase.LoadAssetAtPath<SceneAsset>( searchResultGroup.Title ) };
+					m_searchParameters.searchInAssetsFolder = false;
+					m_searchParameters.searchInAssetsSubset = null;
+					m_searchParameters.searchInProjectSettings = false;
+				}
+				else
+				{
+					m_searchParameters.searchInScenes = (SceneSearchMode) 1024; // A unique value to search only the DontDestroyOnLoad scene
+					m_searchParameters.searchInScenesSubset = null;
+					m_searchParameters.searchInAssetsFolder = false;
+					m_searchParameters.searchInAssetsSubset = null;
+					m_searchParameters.searchInProjectSettings = false;
+				}
+
+				m_searchParameters.lazySceneSearch = false;
+				m_searchParameters.noAssetDatabaseChanges = noAssetDatabaseChanges;
+
+				// Make sure the AssetDatabase is up-to-date
+				AssetDatabase.SaveAssets();
+
+				SearchResult searchResult = searchHandler.Run( m_searchParameters );
+				if( !searchResult.success )
+				{
+					EditorUtility.DisplayDialog( "Error", "Couldn't refresh, check console for more info.", "OK" );
+					return;
+				}
+
+				List<SearchResultGroup> searchResultGroups = searchResult.result;
+				if( searchResultGroups != null )
+				{
+					int newSearchResultGroupIndex = -1;
+					for( int i = 0; i < searchResultGroups.Count; i++ )
+					{
+						if( searchResultGroup.Title == searchResultGroups[i].Title )
+						{
+							newSearchResultGroupIndex = i;
+							break;
+						}
+					}
+
+					if( newSearchResultGroupIndex >= 0 )
+						result[searchResultGroupIndex] = searchResultGroups[newSearchResultGroupIndex];
+					else
+						searchResultGroup.Clear();
+				}
+			}
+			finally
+			{
+				m_searchParameters.searchInScenes = searchInScenes;
+				m_searchParameters.searchInScenesSubset = searchInScenesSubset;
+				m_searchParameters.searchInAssetsFolder = searchInAssetsFolder;
+				m_searchParameters.searchInAssetsSubset = searchInAssetsSubset;
+				m_searchParameters.searchInProjectSettings = searchInProjectSettings;
+			}
 		}
 
 		public void DrawOnGUI( SearchResultDrawParameters parameters )
 		{
+			parameters.searchResult = this;
 			parameters.tooltip = null;
+			parameters.guiRect = EditorGUILayout.GetControlRect( Utilities.GL_EXPAND_WIDTH, Utilities.GL_HEIGHT_0 );
+
+			float guiInitialY = parameters.guiRect.y;
 
 			for( int i = 0; i < result.Count; i++ )
+			{
 				result[i].DrawOnGUI( parameters );
 
-			if( parameters.tooltip != null )
+				if( i < result.Count - 1 )
+				{
+					Rect rect = parameters.guiRect;
+					rect.y += 10f;
+					parameters.guiRect = rect;
+				}
+			}
+
+			if( Event.current.type == EventType.Repaint )
+				guiHeight = parameters.guiRect.y - guiInitialY;
+
+			// To work nicely with GUILayout and scroll view
+			EditorGUILayout.GetControlRect( Utilities.GL_EXPAND_WIDTH, GUILayout.Height( guiHeight ) );
+
+			if( !string.IsNullOrEmpty( parameters.tooltip ) )
 			{
 				// Show tooltip at mouse position
 				Vector2 mousePos = Event.current.mousePosition;
 				Vector2 size = Utilities.TooltipGUIStyle.CalcSize( new GUIContent( parameters.tooltip ) );
 				size.x += 10f;
 
-				GUI.Box( new Rect( new Vector2( mousePos.x - size.x * 0.5f, mousePos.y - size.y ), size ), parameters.tooltip, Utilities.TooltipGUIStyle );
+				Rect tooltipRect = new Rect( new Vector2( mousePos.x - size.x * 0.5f, mousePos.y - size.y ), size );
+				if( tooltipRect.xMin < 0f )
+					tooltipRect.x -= tooltipRect.xMin;
+				else if( tooltipRect.xMax > parameters.guiRect.width )
+					tooltipRect.x -= tooltipRect.xMax - parameters.guiRect.width;
+
+				GUI.Box( tooltipRect, parameters.tooltip, Utilities.TooltipGUIStyle );
+			}
+
+			if( parameters.shouldRefreshEditorWindow )
+			{
+				parameters.shouldRefreshEditorWindow = false;
+
+				EditorWindow focusedWindow = EditorWindow.focusedWindow;
+				if( focusedWindow != null )
+					focusedWindow.Repaint();
+
+				EditorWindow mouseOverWindow = EditorWindow.mouseOverWindow;
+				if( mouseOverWindow != null && mouseOverWindow != focusedWindow )
+					mouseOverWindow.Repaint();
 			}
 		}
 
@@ -156,13 +328,26 @@ namespace AssetUsageDetectorNamespace
 
 		// Close the scenes that were not part of the initial scene setup
 		// Returns true if initial scene setup is restored successfully
-		public bool RestoreInitialSceneSetup()
+		public bool RestoreInitialSceneSetup( bool optional )
 		{
-			if( initialSceneSetup == null )
+			if( initialSceneSetup == null || initialSceneSetup.Length == 0 )
 				return true;
 
 			if( EditorApplication.isPlaying || !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo() )
 				return false;
+
+			if( optional && IsSceneSetupDifferentThanCurrentSetup() && !EditorUtility.DisplayDialog( "Scenes", "Restore initial scene setup?", "Yes", "Leave it as is" ) )
+				return true;
+
+			for( int i = 0; i < initialSceneSetup.Length; i++ )
+			{
+				Scene scene = EditorSceneManager.GetSceneByPath( initialSceneSetup[i].path );
+				if( !scene.isLoaded )
+					scene = EditorSceneManager.OpenScene( initialSceneSetup[i].path, initialSceneSetup[i].isLoaded ? OpenSceneMode.Additive : OpenSceneMode.AdditiveWithoutLoading );
+
+				if( initialSceneSetup[i].isActive )
+					EditorSceneManager.SetActiveScene( scene );
+			}
 
 			SceneSetup[] sceneFinalSetup = EditorSceneManager.GetSceneManagerSetup();
 			for( int i = 0; i < sceneFinalSetup.Length; i++ )
@@ -232,7 +417,7 @@ namespace AssetUsageDetectorNamespace
 
 			for( int i = 0; i < serializedGroups.Count; i++ )
 			{
-				result.Add( new SearchResultGroup( serializedGroups[i].title, serializedGroups[i].clickable ) );
+				result.Add( new SearchResultGroup( serializedGroups[i].title, serializedGroups[i].type, serializedGroups[i].isExpanded, serializedGroups[i].pendingSearch ) );
 				result[i].Deserialize( serializedGroups[i], allNodes );
 			}
 
@@ -244,6 +429,8 @@ namespace AssetUsageDetectorNamespace
 	// Custom class to hold the results for a single scene or Assets folder
 	public class SearchResultGroup
 	{
+		public enum GroupType { Assets = 0, Scene = 1, DontDestroyOnLoad = 2, ProjectSettings = 3 };
+
 		// Custom struct to hold a single path to a reference
 		public struct ReferencePath
 		{
@@ -257,24 +444,38 @@ namespace AssetUsageDetectorNamespace
 			}
 		}
 
-		private readonly string title;
-		private readonly bool clickable;
+		private const float HEADER_HEIGHT = 40f;
+
+		public string Title { get; private set; }
+		public GroupType Type { get; private set; }
+		public bool IsExpanded { get; private set; }
+		public bool PendingSearch { get; private set; }
 
 		private readonly List<ReferenceNode> references;
 		private List<ReferencePath> referencePathsShortUnique;
 		private List<ReferencePath> referencePathsShortest;
 
+		private float calculatedGUIWidth;
+		private float calculatedGUIHeight;
+		private PathDrawingMode calculatedGUIMode;
+		private ReferenceNodeGUI[] guiNodes;
+
 		public int NumberOfReferences { get { return references.Count; } }
 		public ReferenceNode this[int index] { get { return references[index]; } }
 
-		public SearchResultGroup( string title, bool clickable )
+		public SearchResultGroup( string title, GroupType type, bool isExpanded = true, bool pendingSearch = false )
 		{
-			this.title = title;
-			this.clickable = clickable;
+			Title = title;
+			Type = type;
+			IsExpanded = isExpanded;
+			PendingSearch = pendingSearch;
 
 			references = new List<ReferenceNode>();
 			referencePathsShortUnique = null;
 			referencePathsShortest = null;
+
+			calculatedGUIWidth = 0f;
+			guiNodes = null;
 		}
 
 		// Add a reference to the list
@@ -283,37 +484,92 @@ namespace AssetUsageDetectorNamespace
 			references.Add( node );
 		}
 
-		// Initializes commonly used variables of the nodes
-		public void InitializeNodes()
+		// Removes all nodes
+		public void Clear()
 		{
+			references.Clear();
+
+			if( referencePathsShortUnique != null )
+				referencePathsShortUnique.Clear();
+			if( referencePathsShortest != null )
+				referencePathsShortest.Clear();
+
+			PendingSearch = false;
+			calculatedGUIWidth = 0f;
+			guiNodes = null;
+		}
+
+		// Initializes commonly used variables of the nodes
+		public void InitializeNodes( Func<object, ReferenceNode> nodeGetter )
+		{
+			// Remove root nodes that don't have any outgoing links or have null node objects (somehow)
 			for( int i = references.Count - 1; i >= 0; i-- )
 			{
-				ReferenceNode node = references[i];
-				if( node.NumberOfOutgoingLinks == 0 )
-					references.RemoveAt( i );
+				if( references[i].NumberOfOutgoingLinks == 0 )
+					references.RemoveAtFast( i );
 				else
 				{
-					// For simplicity's sake, get rid of root nodes that are
-					// already part of another node's hierarchy
-					bool isRootNodeChildOfOtherNode = false;
-					for( int j = references.Count - 1; j >= 0; j-- )
-					{
-						if( i == j )
-							continue;
-
-						if( references[j].NodeExistsInChildrenRecursive( node ) )
-						{
-							isRootNodeChildOfOtherNode = true;
-							break;
-						}
-					}
-
-					if( isRootNodeChildOfOtherNode )
-						references.RemoveAt( i );
-					else
-						node.InitializeRecursively();
+					object nodeObject = references[i].nodeObject;
+					if( nodeObject == null || nodeObject.Equals( null ) )
+						references.RemoveAtFast( i );
 				}
 			}
+
+			for( int i = references.Count - 1; i >= 0; i-- )
+			{
+				references[i].VerifyLinksRecursively();
+
+				// Some links might be removed during verification
+				if( references[i].NumberOfOutgoingLinks == 0 )
+					references.RemoveAtFast( i );
+			}
+
+			if( references.Count == 0 )
+				return;
+
+			List<ReferenceNode> callStack = new List<ReferenceNode>( 8 );
+
+			// For simplicity's sake, get rid of root nodes that are already part of another node's hierarchy
+			for( int i = references.Count - 1; i >= 0; i-- )
+			{
+				if( IsRootNodePartOfAnotherRootNode( i, callStack ) )
+					references.RemoveAtFast( i );
+			}
+
+			// For clarity, a reference path shouldn't start with a sub-asset but instead with its corresponding main asset
+			for( int i = references.Count - 1; i >= 0; i-- )
+			{
+				object nodeObject = references[i].nodeObject;
+				if( nodeObject.IsAsset() && !AssetDatabase.IsMainAsset( (Object) nodeObject ) )
+				{
+					string assetPath = AssetDatabase.GetAssetPath( (Object) nodeObject );
+					if( string.IsNullOrEmpty( assetPath ) )
+						continue;
+
+					Object mainAsset = AssetDatabase.LoadMainAssetAtPath( assetPath );
+					if( mainAsset == null || mainAsset.Equals( null ) )
+						continue;
+
+					// We're already calling AssetDatabase.IsMainAsset but just in case...
+					if( ReferenceEquals( nodeObject, mainAsset ) )
+						continue;
+
+					if( nodeObject is Component && ( (Component) nodeObject ).gameObject == mainAsset )
+						continue;
+
+					// Get a ReferenceNode for the main asset, add a link to the sub-asset's node and change the root node
+					ReferenceNode newRootNode = nodeGetter( mainAsset );
+					newRootNode.AddLinkTo( references[i], ( nodeObject is Component || nodeObject is GameObject ) ? "Child object" : "Sub-asset" );
+					references[i] = newRootNode;
+
+					// Make sure that the new root node isn't already a part of another node's hierarchy
+					if( IsRootNodePartOfAnotherRootNode( i, callStack ) )
+						references.RemoveAtFast( i );
+				}
+			}
+
+			for( int i = 0; i < references.Count; i++ )
+				references[i].InitializeRecursively();
 		}
 
 		// Check if node exists in this results set
@@ -328,9 +584,27 @@ namespace AssetUsageDetectorNamespace
 			return false;
 		}
 
+		private bool IsRootNodePartOfAnotherRootNode( int index, List<ReferenceNode> callStack )
+		{
+			ReferenceNode node = references[index];
+			for( int i = references.Count - 1; i >= 0; i-- )
+			{
+				if( index == i )
+					continue;
+
+				if( references[i].nodeObject == node.nodeObject || references[i].NodeExistsInChildrenRecursive( node, callStack ) )
+					return true;
+			}
+
+			return false;
+		}
+
 		// Add all the Object's in this container to the set
 		public void AddObjectsTo( HashSet<Object> objectsSet )
 		{
+			if( PendingSearch )
+				return;
+
 			CalculateShortestPathsToReferences();
 
 			for( int i = 0; i < referencePathsShortUnique.Count; i++ )
@@ -344,6 +618,9 @@ namespace AssetUsageDetectorNamespace
 		// Add all the GameObject's in this container to the set
 		public void AddGameObjectsTo( HashSet<GameObject> gameObjectsSet )
 		{
+			if( PendingSearch )
+				return;
+
 			CalculateShortestPathsToReferences();
 
 			for( int i = 0; i < referencePathsShortUnique.Count; i++ )
@@ -360,14 +637,14 @@ namespace AssetUsageDetectorNamespace
 		}
 
 		// Calculate short unique paths to the references
-		public void CalculateShortestPathsToReferences()
+		private void CalculateShortestPathsToReferences()
 		{
 			if( referencePathsShortUnique != null )
 				return;
 
 			referencePathsShortUnique = new List<ReferencePath>( 32 );
 			for( int i = 0; i < references.Count; i++ )
-				references[i].CalculateShortUniquePaths( referencePathsShortUnique );
+				references[i].CalculateShortUniquePaths( referencePathsShortUnique, Type == GroupType.Scene || Type == GroupType.DontDestroyOnLoad );
 
 			referencePathsShortest = new List<ReferencePath>( referencePathsShortUnique.Count );
 			for( int i = 0; i < referencePathsShortUnique.Count; i++ )
@@ -399,60 +676,164 @@ namespace AssetUsageDetectorNamespace
 		// Draw the results found for this container
 		public void DrawOnGUI( SearchResultDrawParameters parameters )
 		{
-			Color c = GUI.color;
-			GUI.color = Color.cyan;
-
-			if( GUILayout.Button( title, Utilities.BoxGUIStyle, Utilities.GL_EXPAND_WIDTH, Utilities.GL_HEIGHT_40 ) && clickable )
+			if( Event.current.type == EventType.Repaint && ( guiNodes == null || parameters.pathDrawingMode != calculatedGUIMode || parameters.guiRect.width != calculatedGUIWidth ) )
 			{
-				// If the container (scene, usually) is clicked, highlight it on Project view
-				AssetDatabase.LoadAssetAtPath<SceneAsset>( title ).SelectInEditor();
+				GenerateGUINodes( parameters );
+				parameters.shouldRefreshEditorWindow = true; // A repaint is needed to work nicely with GUILayout
 			}
 
-			GUI.color = Color.yellow;
+			Color c = GUI.backgroundColor;
+			GUI.backgroundColor = Color.cyan;
 
-			if( parameters.pathDrawingMode == PathDrawingMode.Full )
+			Rect rect = parameters.guiRect;
+			float width = rect.width;
+			rect.width = 40f;
+			rect.height = HEADER_HEIGHT;
+			if( GUI.Button( rect, IsExpanded ? "v" : ">" ) )
 			{
-				for( int i = 0; i < references.Count; i++ )
+				IsExpanded = !IsExpanded;
+
+				parameters.shouldRefreshEditorWindow = true;
+				GUIUtility.ExitGUI();
+			}
+
+			rect.x += 40f;
+			rect.width = width - ( parameters.searchResult != null ? 140f : 40f );
+			if( GUI.Button( rect, Title, Utilities.BoxGUIStyle ) && Type == GroupType.Scene )
+			{
+				if( Event.current.button != 1 )
 				{
-					GUILayout.Space( 5 );
-					references[i].DrawOnGUIRecursively( parameters, null );
+					// If the container (scene, usually) is left clicked, highlight it on Project view
+					AssetDatabase.LoadAssetAtPath<SceneAsset>( Title ).SelectInEditor();
 				}
-			}
-			else
-			{
-				if( referencePathsShortUnique == null )
-					CalculateShortestPathsToReferences();
-
-				List<ReferencePath> pathsToDraw;
-				if( parameters.pathDrawingMode == PathDrawingMode.ShortRelevantParts )
-					pathsToDraw = referencePathsShortUnique;
-				else
-					pathsToDraw = referencePathsShortest;
-
-				for( int i = 0; i < pathsToDraw.Count; i++ )
+				else if( !EditorApplication.isPlaying && EditorSceneManager.loadedSceneCount > 1 )
 				{
-					GUILayout.Space( 5 );
-
-					GUILayout.BeginHorizontal();
-
-					ReferencePath path = pathsToDraw[i];
-					path.startNode.DrawOnGUI( parameters, null );
-
-					ReferenceNode currentNode = path.startNode;
-					for( int j = 0; j < path.pathLinksToFollow.Length; j++ )
+					// Show context menu when SearchResultGroup's header is right clicked
+					Scene scene = EditorSceneManager.GetSceneByPath( Title );
+					if( scene.isLoaded )
 					{
-						ReferenceNode.Link link = currentNode[path.pathLinksToFollow[j]];
-						link.targetNode.DrawOnGUI( parameters, link.description );
-						currentNode = link.targetNode;
+						GenericMenu contextMenu = new GenericMenu();
+						contextMenu.AddItem( new GUIContent( "Close Scene" ), false, () =>
+						{
+							if( !scene.isDirty || EditorSceneManager.SaveModifiedScenesIfUserWantsTo( new Scene[1] { scene } ) )
+								EditorSceneManager.CloseScene( scene, true );
+						} );
+						contextMenu.ShowAsContext();
 					}
-
-					GUILayout.EndHorizontal();
 				}
 			}
 
-			GUI.color = c;
+			if( parameters.searchResult != null )
+			{
+				rect.x += width - 140f;
+				rect.width = 100f;
+				if( GUI.Button( rect, "Refresh" ) )
+				{
+					if( Utilities.AreScenesSaved() || ( EditorUtility.DisplayDialog( "Refresh", "Some scene(s) have unsaved changes, they must be saved before the refresh.", "Save Scenes", "Cancel" ) && EditorSceneManager.SaveOpenScenes() ) )
+					{
+						parameters.searchResult.RefreshSearchResultGroup( this, parameters.noAssetDatabaseChanges );
+						GUIUtility.ExitGUI();
+					}
+				}
+			}
 
-			GUILayout.Space( 10 );
+			rect = parameters.guiRect;
+			rect.y += HEADER_HEIGHT + 5f;
+
+			if( IsExpanded )
+			{
+				// On light skin, yellow background looks better than light grey background
+				GUI.backgroundColor = EditorGUIUtility.isProSkin ? c : Color.yellow;
+
+				if( PendingSearch )
+				{
+					rect.height = 25f;
+					GUI.Box( rect, "Lazy Search: this scene potentially has some references, hit Refresh to find them", Utilities.BoxGUIStyle );
+				}
+				else if( references.Count == 0 )
+				{
+					rect.height = 25f;
+					GUI.Box( rect, "No references found...", Utilities.BoxGUIStyle );
+				}
+				else if( guiNodes != null )
+				{
+					rect.height = calculatedGUIHeight;
+					parameters.guiRect = rect;
+
+					for( int i = 0; i < guiNodes.Length; i++ )
+						guiNodes[i].DrawOnGUI( parameters );
+				}
+
+				rect.y += rect.height;
+			}
+
+			parameters.guiRect = rect;
+			GUI.backgroundColor = c;
+		}
+
+		private void GenerateGUINodes( SearchResultDrawParameters parameters )
+		{
+			float guiRectWidth = parameters.guiRect.width;
+
+			if( guiNodes == null || parameters.pathDrawingMode != calculatedGUIMode )
+			{
+				if( parameters.pathDrawingMode == PathDrawingMode.Full )
+				{
+					List<ReferenceNode> stack = new List<ReferenceNode>( 8 );
+					guiNodes = new ReferenceNodeGUI[references.Count];
+
+					for( int i = 0; i < guiNodes.Length; i++ )
+						guiNodes[i] = references[i].GenerateGUINodeRecursive( stack, null );
+				}
+				else
+				{
+					if( referencePathsShortUnique == null )
+						CalculateShortestPathsToReferences();
+
+					List<ReferencePath> pathsToDraw;
+					if( parameters.pathDrawingMode == PathDrawingMode.ShortRelevantParts )
+						pathsToDraw = referencePathsShortUnique;
+					else
+						pathsToDraw = referencePathsShortest;
+
+					guiNodes = new ReferenceNodeGUI[pathsToDraw.Count];
+
+					for( int i = 0; i < guiNodes.Length; i++ )
+					{
+						ReferencePath path = pathsToDraw[i];
+						ReferenceNode currentNode = path.startNode;
+
+						ReferenceNodeGUI currentNodeGUI = currentNode.GenerateGUINode( null );
+						guiNodes[i] = currentNodeGUI;
+
+						for( int j = 0; j < path.pathLinksToFollow.Length; j++ )
+						{
+							ReferenceNode.Link link = currentNode[path.pathLinksToFollow[j]];
+							currentNodeGUI.links = new ReferenceNodeGUI[1] { link.targetNode.GenerateGUINode( link.description ) };
+
+							currentNode = link.targetNode;
+							currentNodeGUI = currentNodeGUI.links[0];
+						}
+
+						currentNodeGUI.links = new ReferenceNodeGUI[0];
+					}
+				}
+
+				for( int i = 0; i < guiNodes.Length; i++ )
+					guiNodes[i].CalculateDepth();
+			}
+
+			calculatedGUIMode = parameters.pathDrawingMode;
+			calculatedGUIWidth = guiRectWidth;
+
+			calculatedGUIHeight = -5f; // will start from -5f + 5f = 0f
+			for( int i = 0; i < guiNodes.Length; i++ )
+			{
+				calculatedGUIHeight += 5f;
+				guiNodes[i].CalculateHeight( guiRectWidth );
+				guiNodes[i].CalculateOffset( new Vector2( 0f, calculatedGUIHeight ) );
+				calculatedGUIHeight += guiNodes[i].size.y;
+			}
 		}
 
 		// Serialize this result group
@@ -460,8 +841,10 @@ namespace AssetUsageDetectorNamespace
 		{
 			SearchResult.SerializableResultGroup serializedResultGroup = new SearchResult.SerializableResultGroup()
 			{
-				title = title,
-				clickable = clickable
+				title = Title,
+				type = Type,
+				isExpanded = IsExpanded,
+				pendingSearch = PendingSearch
 			};
 
 			if( references != null )
@@ -508,11 +891,11 @@ namespace AssetUsageDetectorNamespace
 		private static int uid_last = 0;
 		private readonly int uid;
 
-		public object nodeObject;
-		private readonly List<Link> links;
-
+		internal object nodeObject;
 		private int? instanceId; // instanceId of the nodeObject if it is a Unity object, null otherwise
 		private string description; // String to print on this node
+
+		private readonly List<Link> links;
 
 		public Object UnityObject { get { return instanceId.HasValue ? EditorUtility.InstanceIDToObject( instanceId.Value ) : null; } }
 
@@ -525,15 +908,10 @@ namespace AssetUsageDetectorNamespace
 			uid = uid_last++;
 		}
 
-		public ReferenceNode( object obj ) : this()
-		{
-			nodeObject = obj;
-		}
-
 		// Add a one-way connection to another node
 		public void AddLinkTo( ReferenceNode nextNode, string description = null )
 		{
-			if( nextNode != null )
+			if( nextNode != null && nextNode != this )
 			{
 				if( !string.IsNullOrEmpty( description ) )
 					description = "[" + description + "]";
@@ -557,6 +935,40 @@ namespace AssetUsageDetectorNamespace
 
 				links.Add( new Link( nextNode, description ) );
 			}
+		}
+
+		public void CopyReferencesTo( ReferenceNode other )
+		{
+			other.links.Clear();
+			other.links.AddRange( links );
+		}
+
+		// Remove any redundant connections that this node has
+		public void VerifyLinksRecursively()
+		{
+			// Make sure that this functions isn't called multiple times per node (avoids StackOverflowException)
+			if( description != null )
+				return;
+
+			description = "";
+
+			for( int i = links.Count - 1; i >= 0; i-- )
+			{
+				// Links from a GameObject to its components should be omitted if the component has no references (these are redundant links)
+				if( links[i].targetNode.links.Count == 0 && nodeObject is GameObject )
+				{
+					Component component = links[i].targetNode.nodeObject as Component;
+					if( component != null && !component.Equals( null ) && component.gameObject == (GameObject) nodeObject )
+					{
+						links.RemoveAtFast( i );
+						continue;
+					}
+				}
+
+				links[i].targetNode.VerifyLinksRecursively();
+			}
+
+			description = null;
 		}
 
 		// Initialize node's commonly used variables
@@ -589,20 +1001,29 @@ namespace AssetUsageDetectorNamespace
 		}
 
 		// Returns whether or not specified node is part of this node's siblings
-		public bool NodeExistsInChildrenRecursive( ReferenceNode node )
+		public bool NodeExistsInChildrenRecursive( ReferenceNode node, List<ReferenceNode> callStack )
 		{
+			if( callStack.ContainsFast( this ) )
+				return false;
+
 			for( int i = 0; i < links.Count; i++ )
 			{
 				if( links[i].targetNode == node )
 					return true;
 			}
 
+			callStack.Add( this );
+
 			for( int i = 0; i < links.Count; i++ )
 			{
-				if( links[i].targetNode.NodeExistsInChildrenRecursive( node ) )
+				if( links[i].targetNode.NodeExistsInChildrenRecursive( node, callStack ) )
+				{
+					callStack.RemoveAt( callStack.Count - 1 );
 					return true;
+				}
 			}
 
+			callStack.RemoveAt( callStack.Count - 1 );
 			return false;
 		}
 
@@ -614,18 +1035,18 @@ namespace AssetUsageDetectorNamespace
 		}
 
 		// Calculate short unique paths that start with this node
-		public void CalculateShortUniquePaths( List<SearchResultGroup.ReferencePath> currentPaths )
+		public void CalculateShortUniquePaths( List<SearchResultGroup.ReferencePath> currentPaths, bool startPathsWithSceneObjects )
 		{
-			CalculateShortUniquePaths( currentPaths, new List<ReferenceNode>( 8 ), new List<int>( 8 ) { -1 }, 0 );
+			CalculateShortUniquePaths( currentPaths, startPathsWithSceneObjects, new List<ReferenceNode>( 8 ), new List<int>( 8 ) { -1 }, 0, new List<ReferenceNode>( 8 ) );
 		}
 
 		// Just some boring calculations to find the short unique paths recursively
-		private void CalculateShortUniquePaths( List<SearchResultGroup.ReferencePath> shortestPaths, List<ReferenceNode> currentPath, List<int> currentPathIndices, int latestObjectIndexInPath )
+		private void CalculateShortUniquePaths( List<SearchResultGroup.ReferencePath> shortestPaths, bool startPathsWithSceneObjects, List<ReferenceNode> currentPath, List<int> currentPathIndices, int latestObjectIndexInPath, List<ReferenceNode> stack )
 		{
 			int currentIndex = currentPath.Count;
 			currentPath.Add( this );
 
-			if( links.Count == 0 )
+			if( links.Count == 0 || stack.ContainsFast( this ) )
 			{
 				// Check if the path to the reference is unique (not discovered so far)
 				bool isUnique = true;
@@ -661,12 +1082,19 @@ namespace AssetUsageDetectorNamespace
 			else
 			{
 				if( instanceId.HasValue ) // nodeObject is Unity object
-					latestObjectIndexInPath = currentIndex;
+				{
+					if( !startPathsWithSceneObjects || !AssetDatabase.Contains( instanceId.Value ) )
+						latestObjectIndexInPath = currentIndex;
+				}
 
 				for( int i = 0; i < links.Count; i++ )
 				{
 					currentPathIndices.Add( i );
-					links[i].targetNode.CalculateShortUniquePaths( shortestPaths, currentPath, currentPathIndices, latestObjectIndexInPath );
+					stack.Add( this );
+
+					links[i].targetNode.CalculateShortUniquePaths( shortestPaths, startPathsWithSceneObjects, currentPath, currentPathIndices, latestObjectIndexInPath, stack );
+
+					stack.RemoveAt( stack.Count - 1 );
 					currentPathIndices.RemoveAt( currentIndex + 1 );
 				}
 			}
@@ -674,41 +1102,33 @@ namespace AssetUsageDetectorNamespace
 			currentPath.RemoveAt( currentIndex );
 		}
 
-		// Draw all the paths that start with this node on GUI recursively
-		public void DrawOnGUIRecursively( SearchResultDrawParameters parameters, string linkToPrevNodeDescription )
+		public ReferenceNodeGUI GenerateGUINode( string linkToPrevNodeDescription )
 		{
-			GUILayout.BeginHorizontal();
-
-			DrawOnGUI( parameters, linkToPrevNodeDescription );
-
-			if( links.Count > 0 )
+			return new ReferenceNodeGUI()
 			{
-				GUILayout.BeginVertical();
-
-				for( int i = 0; i < links.Count; i++ )
-				{
-					ReferenceNode next = links[i].targetNode;
-					next.DrawOnGUIRecursively( parameters, links[i].description );
-				}
-
-				GUILayout.EndVertical();
-			}
-
-			GUILayout.EndHorizontal();
+				label = new GUIContent( string.IsNullOrEmpty( linkToPrevNodeDescription ) ? description : ( linkToPrevNodeDescription + "\n" + description ) ),
+				instanceId = instanceId
+			};
 		}
 
-		// Draw only this node on GUI
-		public void DrawOnGUI( SearchResultDrawParameters parameters, string linkToPrevNodeDescription )
+		public ReferenceNodeGUI GenerateGUINodeRecursive( List<ReferenceNode> stack, string linkToPrevNodeDescription )
 		{
-			string label = string.IsNullOrEmpty( linkToPrevNodeDescription ) ? description : ( linkToPrevNodeDescription + "\n" + description );
-			if( GUILayout.Button( label, Utilities.BoxGUIStyle, Utilities.GL_EXPAND_HEIGHT ) )
+			ReferenceNodeGUI guiNode = GenerateGUINode( linkToPrevNodeDescription );
+
+			if( stack.ContainsFast( this ) )
+				guiNode.links = new ReferenceNodeGUI[0];
+			else
 			{
-				// If a reference is clicked, highlight it (either on Hierarchy view or Project view)
-				UnityObject.SelectInEditor();
+				stack.Add( this );
+
+				guiNode.links = new ReferenceNodeGUI[links.Count];
+				for( int i = 0; i < links.Count; i++ )
+					guiNode.links[i] = links[i].targetNode.GenerateGUINodeRecursive( stack, links[i].description );
+
+				stack.RemoveAt( stack.Count - 1 );
 			}
 
-			if( parameters.showTooltips && Event.current.type == EventType.Repaint && GUILayoutUtility.GetLastRect().Contains( Event.current.mousePosition ) )
-				parameters.tooltip = label;
+			return guiNode;
 		}
 
 		// Serialize this node and its connected nodes recursively
@@ -764,6 +1184,97 @@ namespace AssetUsageDetectorNamespace
 		public override int GetHashCode()
 		{
 			return uid;
+		}
+	}
+
+	public class ReferenceNodeGUI
+	{
+		public GUIContent label;
+		public ReferenceNodeGUI[] links;
+		public int? instanceId;
+
+		private int depth;
+
+		private Vector2 offset;
+		public Vector2 size;
+
+		public void CalculateDepth()
+		{
+			depth = 0;
+
+			for( int i = 0; i < links.Length; i++ )
+			{
+				links[i].CalculateDepth();
+				if( links[i].depth > depth )
+					depth = links[i].depth;
+			}
+
+			depth++;
+		}
+
+		public void CalculateHeight( float totalWidth )
+		{
+			size.x = totalWidth / depth;
+			totalWidth -= size.x;
+			size.y = Utilities.BoxGUIStyle.CalcHeight( label, size.x );
+			float connectedNodesHeight = 0f;
+			for( int i = 0; i < links.Length; i++ )
+			{
+				links[i].CalculateHeight( totalWidth );
+				connectedNodesHeight += links[i].size.y;
+			}
+
+			if( size.y < connectedNodesHeight )
+				size.y = connectedNodesHeight;
+			else if( size.y > connectedNodesHeight )
+				ExpandHeightLeftToRight();
+		}
+
+		private void ExpandHeightLeftToRight()
+		{
+			float connectedNodesHeight = 0f;
+			for( int i = 0; i < links.Length; i++ )
+				connectedNodesHeight += links[i].size.y;
+
+			if( size.y > connectedNodesHeight )
+			{
+				for( int i = 0; i < links.Length; i++ )
+				{
+					links[i].size.y = size.y * links[i].size.y / connectedNodesHeight;
+					links[i].ExpandHeightLeftToRight();
+				}
+			}
+		}
+
+		public void CalculateOffset( Vector2 baseOffset )
+		{
+			offset = baseOffset;
+			baseOffset.x += size.x;
+
+			for( int i = 0; i < links.Length; i++ )
+			{
+				links[i].CalculateOffset( baseOffset );
+				baseOffset.y += links[i].size.y;
+			}
+		}
+
+		public void DrawOnGUI( SearchResultDrawParameters parameters )
+		{
+			Rect rect = parameters.guiRect;
+			rect.position += offset;
+			rect.size = size;
+
+			if( GUI.Button( rect, label, Utilities.BoxGUIStyle ) && instanceId.HasValue )
+			{
+				// If a reference is clicked, highlight it (either on Hierarchy view or Project view)
+				EditorUtility.InstanceIDToObject( instanceId.Value ).SelectInEditor();
+			}
+
+			for( int i = 0; i < links.Length; i++ )
+				links[i].DrawOnGUI( parameters );
+
+			if( parameters.showTooltips && Event.current.type == EventType.Repaint && rect.Contains( Event.current.mousePosition ) )
+				parameters.tooltip = label.text;
 		}
 	}
 }

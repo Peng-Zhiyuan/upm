@@ -47,6 +47,15 @@ public class StuffObject<T> : MonoBehaviour where T : StuffObject<T>
         }
     }
 
+    [Obsolete("此属性仅为遗留代码做适配，使用 Stuff 属性代替")]
+    public static T Instance
+    {
+        get
+        {
+            return Stuff;
+        }
+    }
+
     public void Touch()
     {
 

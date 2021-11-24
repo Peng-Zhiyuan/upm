@@ -20,6 +20,37 @@ public class Page : View
         }
     }
 
+    bool _active;
+
+    /// <summary>
+    /// 用来代替 Unity 的原生事件 OnEnable / OnDisable
+    /// 因为游戏对象的 Active 属性可能因为某些原因在一个 UIEngine 操作里会被反复设置多次，会多次触发底层事件
+    /// 而此状态由 UIEngine 最终设置，以免除被影响
+    /// </summary>
+    public bool Active
+    {
+        get
+        {
+            return _active;
+        }
+        set
+        {
+            if(value == _active)
+            {
+                return;
+            }
+            _active = value;
+            if(value)
+            {
+                this.OnActive();
+            }
+            else
+            {
+                this.OnDeactive();
+            }
+        }
+    }
+
     [HideInInspector]
     public Action OnPoped;
 
@@ -116,4 +147,7 @@ public class Page : View
     public virtual void OnForwardTo(PageNavigateInfo navigateInfo) { }
 
     public virtual void OnBackTo(PageNavigateInfo navigateInfo) { }
+
+    protected virtual void OnActive() { }
+    protected virtual void OnDeactive() { }
 }

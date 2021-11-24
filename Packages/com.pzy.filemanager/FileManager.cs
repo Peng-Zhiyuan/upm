@@ -7,9 +7,25 @@ using System.Text;
 
 public static class FileManager
 {
+    public static string PersistentPath
+    {
+        get
+        {
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                // 在 windows 编辑器上 unity 没有提供该路径，自己指定到项目文件夹内
+                return "./FileManagerPersistent";
+            }
+            else
+            {
+                return Application.persistentDataPath;
+            }    
+        }
+    }
+
     public static string Write(string path, IFilelizable obj)
     {
-        var filePath = $"{Application.persistentDataPath}/{path}";
+        var filePath = $"{PersistentPath}/{path}";
         var dir = Path.GetDirectoryName(filePath);
         if(!Directory.Exists(dir))
         {
@@ -27,7 +43,7 @@ public static class FileManager
 
     public static string WriteBytes(string path, byte[] bytes)
     {
-        var filePath = $"{Application.persistentDataPath}/{path}";
+        var filePath = $"{PersistentPath}/{path}";
         var dir = Path.GetDirectoryName(filePath);
         if(!Directory.Exists(dir))
         {
@@ -44,48 +60,54 @@ public static class FileManager
 
     public static bool HasFile(string path)
     {
-        var filePath = $"{Application.persistentDataPath}/{path}";
-        return File.Exists(filePath);
+        var filePath = $"{PersistentPath}/{path}";
+        var b = File.Exists(filePath);
+        return b;
     }
 
     public static string[] GetFileList(string dirPath)
     {
-        if(Directory.Exists(dirPath))
+        var root = $"{PersistentPath}/{dirPath}";
+        if (Directory.Exists(root))
         {
-            return Directory.GetFiles(dirPath);
+            var list = Directory.GetFiles(root);
+            return list;
         }
         return new string[0];
     }
 
     public static string[] GetDirectoryList(string dirPath)
     {
-        var root = $"{Application.persistentDataPath}/{dirPath}";
+        var root = $"{PersistentPath}/{dirPath}";
         if (Directory.Exists(root))
         {
-            return Directory.GetDirectories(root);
+            var list = Directory.GetDirectories(root);
+            return list;
         }
         return new string[0];
     }
 
     public static void DeleteFile(string path)
     {
-        if(File.Exists(path))
+        var diskPath = $"{PersistentPath}/{path}";
+        if (File.Exists(diskPath))
         {
-            File.Delete(path);
+            File.Delete(diskPath);
         }
     }
 
     public static void DeleteDirectory(string path)
     {
-        if (Directory.Exists(path))
+        var diskPath = $"{PersistentPath}/{path}";
+        if (Directory.Exists(diskPath))
         {
-            Directory.Delete(path, true);
+            Directory.Delete(diskPath, true);
         }
     }
 
     public static T Read<T>(string path) where T : IFilelizable
     {
-        var filePath = $"{Application.persistentDataPath}/{path}";
+        var filePath = $"{PersistentPath}/{path}";
         if(!File.Exists(filePath))
         {
             return default(T);
@@ -98,7 +120,7 @@ public static class FileManager
 
     public static byte[] ReadBytes(string path)
     {
-        var filePath = $"{Application.persistentDataPath}/{path}";
+        var filePath = $"{PersistentPath}/{path}";
         if(!File.Exists(filePath))
         {
             return null;

@@ -3,68 +3,71 @@ using System.Collections.Generic;
 using System.IO;
 using CustomLitJson;
 
-public static class Content
+namespace EtuUnity
 {
-
-    private static string _test;
-    public static string Test
+    public static class Content
     {
-        get
+
+        private static string _test;
+        public static string Test
         {
-            if(_test == null)
+            get
             {
-                var root = Util.FindScriptDir();
-                var path = $"{root}/Res_Test.txt";
-                _test = File.ReadAllText(path);
+                if (_test == null)
+                {
+                    var root = Util.FindScriptDir();
+                    var path = $"{root}/Res_Test.txt";
+                    _test = File.ReadAllText(path);
+                }
+                return _test;
             }
-            return _test;
         }
-    }
 
-    private static string _tablePropertyTemplate;
-    public static string TablePropertyTemplate
-    {
-        get
+        private static string _tablePropertyTemplate;
+        public static string TablePropertyTemplate
         {
-            if(_tablePropertyTemplate == null)
+            get
             {
-                var root = Util.FindScriptDir();
-                var path = $"{root}/Res_TableCode.txt";
-                _tablePropertyTemplate = File.ReadAllText(path);
+                if (_tablePropertyTemplate == null)
+                {
+                    var root = Util.FindScriptDir();
+                    var path = $"{root}/Res_TableCode.txt";
+                    _tablePropertyTemplate = File.ReadAllText(path);
+                }
+                return _tablePropertyTemplate;
             }
-            return _tablePropertyTemplate;
         }
-    }
 
-    private static string _kvtablePropertyTemplate;
-    public static string KvTablePropertyTemplate
-    {
-        get
+        private static string _kvtablePropertyTemplate;
+        public static string KvTablePropertyTemplate
         {
-            if(_kvtablePropertyTemplate == null)
+            get
             {
-                var root = Util.FindScriptDir();
-                var path = $"{root}/Res_KeyValueTableCode.txt";
-                _kvtablePropertyTemplate = File.ReadAllText(path);
+                if (_kvtablePropertyTemplate == null)
+                {
+                    var root = Util.FindScriptDir();
+                    var path = $"{root}/Res_KeyValueTableCode.txt";
+                    _kvtablePropertyTemplate = File.ReadAllText(path);
+                }
+                return _kvtablePropertyTemplate;
             }
-            return _kvtablePropertyTemplate;
         }
-    }
 
-    private static string _staticDataTemplate;
-    public static string StaticDataFrame
-    {
-        get
+        private static string _staticDataTemplate;
+        public static string StaticDataFrame
         {
-            if(_staticDataTemplate == null)
+            get
             {
-                var root = Util.FindScriptDir();
-                var path = $"{root}/Res_ClientConfig+Frame.txt";
-                _staticDataTemplate = File.ReadAllText(path);
+                if (_staticDataTemplate == null)
+                {
+                    var root = Util.FindScriptDir();
+                    var path = $"{root}/Res_ClientConfig+Frame.txt";
+                    _staticDataTemplate = File.ReadAllText(path);
+                }
+                return _staticDataTemplate;
             }
-            return _staticDataTemplate;
         }
+
+
     }
-
-
 }

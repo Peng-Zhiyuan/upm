@@ -1,5 +1,29 @@
 {
   "dependencies": {
+    "com.pzy.addressableext": {
+      "version": "file:com.pzy.addressableext",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.androidutils": {
+      "version": "file:com.pzy.androidutils",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.autotsting": {
+      "version": "file:com.pzy.autotesting",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.bundlesetter": {
+      "version": "file:com.pzy.bundlesetter",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.clientconfig": {
       "version": "file:com.pzy.clientconfig",
       "depth": 0,
@@ -8,6 +32,18 @@
     },
     "com.pzy.codelinker": {
       "version": "file:com.pzy.codelinker",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.codesign": {
+      "version": "file:com.pzy.codesign",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.copy": {
+      "version": "file:com.pzy.copy",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
@@ -42,6 +78,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.filemanager": {
+      "version": "file:com.pzy.filemanager",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.formatsetter": {
       "version": "file:com.pzy.formatsetter",
       "depth": 0,
@@ -54,8 +96,20 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.loxodonbundleext": {
+      "version": "file:com.pzy.loxodonbundleext",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.lunchermanifest": {
       "version": "file:com.pzy.lunchermanifest",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.mapmanager": {
+      "version": "file:com.pzy.mapmanager",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
@@ -72,8 +126,50 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.projectsetter": {
+      "version": "file:com.pzy.projectsetter",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.remoteres": {
+      "version": "file:com.pzy.remoteres",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.sdk.wx": {
+      "version": "file:com.pzy.sdk.wx",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.stuffobject": {
       "version": "file:com.pzy.stuffobject",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.third.assetusagedetector": {
+      "version": "file:com.pzy.thrid.assetusagedetector",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.third.loxodonbundle": {
+      "version": "file:com.pzy.third.loxodonbundle",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.third.xlua": {
+      "version": "file:com.pzy.third.xlua",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.ui": {
+      "version": "file:com.pzy.ui",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
@@ -88,14 +184,26 @@
         "com.pzy.utils": "1.0.0"
       }
     },
+    "com.pzy.universaleventsystem": {
+      "version": "file:com.pzy.universaleventsystem",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.utils": {
       "version": "file:com.pzy.utils",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
     },
-    "com.tianyou.utils": {
+    "com.tianyou.console": {
       "version": "file:com.tianyou.console",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.tianyou.localization": {
+      "version": "file:com.tianyou.localization",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
@@ -113,7 +221,7 @@
       "dependencies": {}
     },
     "com.unity.ads": {
-      "version": "3.7.1",
+      "version": "3.7.5",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -122,7 +230,7 @@
       "url": "https://packages.unity.cn"
     },
     "com.unity.analytics": {
-      "version": "3.3.5",
+      "version": "3.6.11",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -131,7 +239,7 @@
       "url": "https://packages.unity.cn"
     },
     "com.unity.collab-proxy": {
-      "version": "1.6.0",
+      "version": "1.10.2",
       "depth": 0,
       "source": "registry",
       "dependencies": {},
@@ -154,7 +262,7 @@
       "url": "https://packages.unity.cn"
     },
     "com.unity.ide.visualstudio": {
-      "version": "2.0.9",
+      "version": "2.0.11",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -163,7 +271,7 @@
       "url": "https://packages.unity.cn"
     },
     "com.unity.ide.vscode": {
-      "version": "1.2.3",
+      "version": "1.2.4",
       "depth": 0,
       "source": "registry",
       "dependencies": {},
@@ -192,7 +300,7 @@
       "url": "https://packages.unity.cn"
     },
     "com.unity.test-framework": {
-      "version": "1.1.27",
+      "version": "1.1.29",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -233,7 +341,7 @@
       }
     },
     "com.unity.xr.legacyinputhelpers": {
-      "version": "2.1.7",
+      "version": "2.1.8",
       "depth": 0,
       "source": "registry",
       "dependencies": {

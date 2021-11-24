@@ -8,7 +8,74 @@ using System.Reflection;
 
 public static class JsonUtil
 {
-    
+    public static int ToInt(this JsonData jd)
+    {
+        var jw = (IJsonWrapper)jd;
+        return jw.GetInt();
+    }
+
+    public static List<JsonData> ToList(this JsonData jd)
+    {
+        var list = new List<JsonData>();
+        for (int k = 0; k < jd.Count; k++)
+        {
+            list.Add(jd[k]);
+        }
+        return list;
+    }
+
+
+    public static Dictionary<string, JsonData> ToDictionary(this JsonData jd)
+    {
+        var dic = new Dictionary<string, JsonData>();
+        var jdDic = jd as IDictionary;
+        foreach (string key in jdDic.Keys)
+        {
+            dic[key] = jd[key];
+        }
+        return dic;
+    }
+
+    public static bool ToBool(this JsonData jd)
+    {
+        var jw = (IJsonWrapper)jd;
+        return jw.GetBoolean();
+    }
+
+    public static string ToString(this JsonData jd)
+    {
+        var jw = (IJsonWrapper)jd;
+        return jw.GetString();
+    }
+
+    public static double ToDouble(this JsonData jd)
+    {
+        var jw = (IJsonWrapper)jd;
+        return jw.GetDouble();
+    }
+
+    public static long ToLong(this JsonData jd)
+    {
+        var jw = (IJsonWrapper)jd;
+        return jw.GetLong();
+    }
+
+    public static bool HasKey(this JsonData jd, string key)
+    {
+        var dic = jd.ToDictionary();
+        var b = dic.ContainsKey(key);
+        return b;
+    }
+    public static string Stringify(object o)
+    {
+        return CustomLitJson.JsonMapper.Instance.ToJson(o);
+    }
+
+    public static object Parse(string json)
+    {
+        return CustomLitJson.JsonMapper.Instance.ToObject(json);
+    }
+
     public static string ToJsonStr(this Dictionary<string, List<string>> dic){
         return ToJson(dic).ToJson();
     }
@@ -38,7 +105,14 @@ public static class JsonUtil
         return result;
     }
 
-    public static object JsonDataToObject(Type type, JsonData jd)
+    public static T JsonDataToObject<T>(JsonData jd)
+    {
+        var type = typeof(T);
+        var obj = JsonDataToObject(type, jd);
+        return (T)obj;
+    }
+
+     public static object JsonDataToObject(Type type, JsonData jd)
     {
         if (type == typeof(int))
         {
@@ -202,6 +276,18 @@ public static class JsonUtil
                 }
                 return list;
             }
+        }
+        else if (typeof(Array).IsAssignableFrom(type))
+        {
+            var itemType = type.GetElementType();
+            int n = jd.Count;
+            var array = Array.CreateInstance(itemType, n);
+            for (int i = 0; i < n; i++)
+            {
+                var item = JsonUtil.JsonDataToObject(itemType, jd[i]);
+                ((Array)array).SetValue(item, i);
+            }
+            return array;
         }
         else
         {

@@ -59,6 +59,31 @@ public static class ReflectionUtil
         return subTypeQuery.ToList();
     }
 
+    public static List<Type> GetAttributedClasses<TAttribute>(Assembly assembly) where TAttribute : Attribute
+    {
+        var subTypeQuery = from t in assembly.GetTypes()
+                           where HasCustomAttribute<TAttribute>(t)
+                           select t;
+        return subTypeQuery.ToList();
+    }
+
+    public static bool HasCustomAttribute<TAttribute>(Type type) where TAttribute : Attribute
+    {
+        var t = type.GetCustomAttribute<TAttribute>();
+        if(t != null)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 在所有程序集中寻找指定类型的子类
+    /// * 不包括自己
+    /// </summary>
     public static List<Type> GetSubClassesInAllAssemblies<T>()
     {
         var assemblyList = AppDomain.CurrentDomain.GetAssemblies();
@@ -70,7 +95,22 @@ public static class ReflectionUtil
         }
         return ret;
     }
-    
+
+    /// <summary>
+    /// 在所有程序集中寻找包含指定 Attribute 的类型
+    /// </summary>
+    public static List<Type> GetAttributedClassesInAllAssemblies<T>() where T :Attribute
+    {
+        var assemblyList = AppDomain.CurrentDomain.GetAssemblies();
+        var ret = new List<Type>();
+        foreach (var assembly in assemblyList)
+        {
+            var list = GetAttributedClasses<T>(assembly);
+            ret.AddRange(list);
+        }
+        return ret;
+    }
+
     public static Func<object, object[], object> GetExecuteDelegate(MethodInfo methodInfo)
     {
         // parameters to execute

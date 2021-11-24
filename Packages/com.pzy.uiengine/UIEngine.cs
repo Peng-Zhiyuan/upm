@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
 
-public class UIEngine : SceneObject<UIEngine> 
+public class UIEngine : ResourcesObject<UIEngine> 
 {
     [HideInInspector]
     public PageStack pageStack = new PageStack ();
@@ -121,6 +121,7 @@ public class UIEngine : SceneObject<UIEngine>
         container.transform.SetParent(parent.transform, false);
         container.Page = page;
         page.ContainerActive = false;
+        page.Active = false;
         // page.transform.localScale = Vector2.one;
         // page.rectTransform.offsetMin = Vector2.zero;
         // page.rectTransform.offsetMax = Vector2.zero;
@@ -447,7 +448,7 @@ public class UIEngine : SceneObject<UIEngine>
         floating.OnShow(param);
         FloatingDisplayChanged?.Invoke(floating, true);
         floating.GameObject.SetActive(true);
-        floating.OnAfterShow();
+        //floating.OnAfterShow();
         return floating;
     }
 

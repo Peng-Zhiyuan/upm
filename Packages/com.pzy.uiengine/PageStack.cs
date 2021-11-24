@@ -34,6 +34,7 @@ public class PageStack
             naviInof.lastPageType = null;
         }
         page.ContainerActive = true;
+        page.Active = true;
         page.OnForwardTo(naviInof);
         page.OnNavigatedTo(naviInof);
         
@@ -58,6 +59,7 @@ public class PageStack
         page.OnPop();
         await page.OnPopAsync();
         page.ContainerActive = false;
+        page.Active = false;
         RecaculateActive();
         if (stack.Count > 0)
         {
@@ -84,6 +86,7 @@ public class PageStack
         if(Peek() == target) return ret;
         var page = stack.Pop();
         page.ContainerActive = false;
+        page.Active = false;
         page.OnNavigatedFrom();
         page.OnPop();
         await page.OnPopAsync();
@@ -95,6 +98,7 @@ public class PageStack
         {
             var p = stack.Pop();
             p.ContainerActive = false;
+            p.Active = false;
             p.OnPop();
             await p.OnPopAsync();
             ret.Add(p);
@@ -166,6 +170,7 @@ public class PageStack
             {
                 ret = page;
                 page.ContainerActive = false;
+                page.Active = false;
                 page.OnPop();
                 await page.OnPopAsync();
                 break;
@@ -209,6 +214,7 @@ public class PageStack
 		if(stack.Count==0)return;
         var old = stack.Pop();
         old.ContainerActive = false;
+        old.Active = false;
         old.OnNavigatedFrom();
         old.OnPop();
         await old.OnPopAsync();
@@ -219,6 +225,7 @@ public class PageStack
 	
         stack.Push(page);
         page.ContainerActive = true;
+        page.Active = true;
         page.OnPush();
 
         PageNavigateInfo naviInof = new PageNavigateInfo();
@@ -240,6 +247,7 @@ public class PageStack
         {
             Page page = tempArray[i];
             page.ContainerActive = visible;
+            page.Active = visible;
             if (!page.IsOverlay)
             {
                 visible = false;

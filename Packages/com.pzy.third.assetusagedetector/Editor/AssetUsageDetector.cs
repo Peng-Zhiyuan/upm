@@ -1,27 +1,19 @@
 // Asset Usage Detector - by Suleyman Yasir KULA (yasirkula@gmail.com)
 
-using AssetUsageDetectorNamespace.Extras;
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.Animations;
 using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System;
 using System.IO;
-#if UNITY_2017_1_OR_NEWER
-using UnityEngine.U2D;
-#if UNITY_2018_2_OR_NEWER
-using UnityEditor.U2D;
-#endif
-using UnityEngine.Playables;
-#endif
-#if UNITY_2017_2_OR_NEWER
-using UnityEngine.Tilemaps;
-#endif
+using System.Text;
 using Object = UnityEngine.Object;
+#if UNITY_2018_3_OR_NEWER
+using PrefabStage = UnityEditor.Experimental.SceneManagement.PrefabStage;
+using PrefabStageUtility = UnityEditor.Experimental.SceneManagement.PrefabStageUtility;
+#endif
 
 namespace AssetUsageDetectorNamespace
 {
@@ -29,181 +21,170 @@ namespace AssetUsageDetectorNamespace
 	public enum SceneSearchMode { None = 0, OpenScenes = 1, ScenesInBuildSettingsAll = 2, ScenesInBuildSettingsTickedOnly = 4, AllScenes = 8 };
 	public enum PathDrawingMode { Full = 0, ShortRelevantParts = 1, Shortest = 2 };
 
-	public class AssetUsageDetector
+	public partial class AssetUsageDetector
 	{
 		#region Helper Classes
+		[Serializable]
 		public class Parameters
 		{
-			public IEnumerable<Object> objectsToSearch;
+			public Object[] objectsToSearch = null;
 
-			public SceneSearchMode searchInScenes;
-			public bool searchInAssetsFolder;
-			public IEnumerable<Object> searchInAssetsSubset;
+			public SceneSearchMode searchInScenes = SceneSearchMode.AllScenes;
+			public Object[] searchInScenesSubset = null;
+			public Object[] excludedScenesFromSearch = null;
+			public bool searchInAssetsFolder = true;
+			public Object[] searchInAssetsSubset = null;
+			public Object[] excludedAssetsFromSearch = null;
+			public bool dontSearchInSourceAssets = true;
+			public bool searchInProjectSettings = true;
 
-			public int searchDepthLimit;
-			public BindingFlags fieldModifiers, propertyModifiers;
+			public int searchDepthLimit = 4;
+			public BindingFlags fieldModifiers = BindingFlags.Public | BindingFlags.NonPublic;
+			public BindingFlags propertyModifiers = BindingFlags.Public | BindingFlags.NonPublic;
+			public bool searchNonSerializableVariables = true;
 
-			public bool noAssetDatabaseChanges;
-
-			public Parameters()
-			{
-				objectsToSearch = null;
-				searchInScenes = SceneSearchMode.AllScenes;
-				searchInAssetsFolder = true;
-				searchInAssetsSubset = null;
-				searchDepthLimit = 4;
-				fieldModifiers = BindingFlags.Public | BindingFlags.NonPublic;
-				propertyModifiers = BindingFlags.Public | BindingFlags.NonPublic;
-				noAssetDatabaseChanges = false;
-			}
-		}
-
-		private class CacheEntry
-		{
-			public enum Result { Unknown = 0, No = 1, Yes = 2 };
-
-			public string hash;
-			public string[] dependencies;
-
-			public bool verified;
-			public Result searchResult;
-
-			public CacheEntry( string path )
-			{
-				Verify( path );
-			}
-
-			public CacheEntry( string hash, string[] dependencies )
-			{
-				this.hash = hash;
-				this.dependencies = dependencies;
-			}
-
-			public void Verify( string path )
-			{
-				string hash = AssetDatabase.GetAssetDependencyHash( path ).ToString();
-				if( this.hash != hash )
-				{
-					this.hash = hash;
-					dependencies = AssetDatabase.GetDependencies( path, false );
-				}
-
-				verified = true;
-			}
+			public bool lazySceneSearch = false;
+			public bool noAssetDatabaseChanges = false;
+			public bool showDetailedProgressBar = false;
 		}
 		#endregion
 
-		private HashSet<Object> objectsToSearchSet; // A set that contains the searched asset(s) and their sub-assets (if any)
+		// A set that contains the searched asset(s) and their sub-assets (if any)
+		private readonly HashSet<Object> objectsToSearchSet = new HashSet<Object>();
+		// Scenes of scene object(s) in objectsToSearchSet
+		private readonly HashSet<string> sceneObjectsToSearchScenesSet = new HashSet<string>();
+		// Project asset(s) in objectsToSearchSet
+		private readonly HashSet<Object> assetsToSearchSet = new HashSet<Object>();
+		// assetsToSearchSet's path(s)
+		private readonly HashSet<string> assetsToSearchPathsSet = new HashSet<string>();
+		// The root prefab objects in assetsToSearchSet that will be used to search for prefab references
+		private readonly List<GameObject> assetsToSearchRootPrefabs = new List<GameObject>( 4 );
+		// Path(s) of the assets that should be excluded from the search
+		private readonly HashSet<string> excludedAssetsPathsSet = new HashSet<string>();
+		// Extension(s) of assets that will always be searched in detail
+		private readonly HashSet<string> alwaysSearchedExtensionsSet = new HashSet<string>();
 
-		private HashSet<Object> sceneObjectsToSearchSet; // Scene object(s) in objectsToSearchSet
-		private HashSet<string> sceneObjectsToSearchScenesSet; // sceneObjectsToSearchSet's scene(s)
+		// Results for the currently searched scene
+		private SearchResultGroup currentSearchResultGroup;
 
-		private HashSet<Object> assetsToSearchSet; // Project asset(s) in objectsToSearchSet
-		private HashSet<string> assetsToSearchPathsSet; // objectsToSearchSet's path(s)
+		// An optimization to search an object only once (key is a hash of the searched object)
+		private readonly Dictionary<string, ReferenceNode> searchedObjects = new Dictionary<string, ReferenceNode>( 32768 );
 
-		private SearchResultGroup currentSearchResultGroup; // Results for the currently searched scene
-
-		private Dictionary<Type, VariableGetterHolder[]> typeToVariables; // An optimization to fetch & filter fields and properties of a class only once
-		private Dictionary<string, ReferenceNode> searchedObjects; // An optimization to search an object only once (key is a hash of the searched object)
-		private Dictionary<string, CacheEntry> assetDependencyCache; // An optimization to fetch the dependencies of an asset only once (key is the path of the asset)
-
-		private Dictionary<Type, Func<Object, ReferenceNode>> typeToSearchFunction; // Dictionary to quickly find the function to search a specific type with
-
-		private Stack<object> callStack; // Stack of SearchObject function parameters to avoid infinite loops (which happens when same object is passed as parameter to function)
-
-		private bool searchPrefabConnections;
-		private bool searchMonoBehavioursForScript;
-		private bool searchRenderers;
-		private bool searchMaterialsForShader;
-		private bool searchMaterialsForTexture;
-
-		private bool searchSerializableVariablesOnly;
+		// Stack of SearchObject function parameters to avoid infinite loops (which happens when same object is passed as parameter to function)
+		private readonly List<object> callStack = new List<object>( 64 );
 
 		private int searchDepthLimit; // Depth limit for recursively searching variables of objects
 
-		private Object currentObject;
+		private Object currentSearchedObject;
 		private int currentDepth;
 
-		private BindingFlags fieldModifiers, propertyModifiers;
-		private BindingFlags prevFieldModifiers, prevPropertyModifiers;
+		private bool dontSearchInSourceAssets;
+		private bool searchingSourceAssets;
+		private bool isInPlayMode;
+
+#if UNITY_2018_3_OR_NEWER
+		private PrefabStage openPrefabStage;
+		private GameObject openPrefabStagePrefabAsset;
+#if UNITY_2020_1_OR_NEWER
+		private GameObject openPrefabStageContextObject;
+#endif
+#endif
 
 		private int searchedObjectsCount; // Number of searched objects
 		private double searchStartTime;
 
-		private List<ReferenceNode> nodesPool = new List<ReferenceNode>( 32 );
-		private List<VariableGetterHolder> validVariables = new List<VariableGetterHolder>( 32 );
-
-		private string CachePath { get { return Application.dataPath + "/../Library/AssetUsageDetector.cache"; } } // Path of the cache file
+		private readonly List<ReferenceNode> nodesPool = new List<ReferenceNode>( 32 );
 
 		// Search for references!
 		public SearchResult Run( Parameters searchParameters )
 		{
+			if( searchParameters == null )
+			{
+				Debug.LogError( "searchParameters must not be null!" );
+				return new SearchResult( false, null, null, this, searchParameters );
+			}
+
 			if( searchParameters.objectsToSearch == null )
 			{
-				Debug.LogError( "objectsToSearch list is empty" );
-				return new SearchResult( false, null, null );
+				Debug.LogError( "objectsToSearch list is empty!" );
+				return new SearchResult( false, null, null, this, searchParameters );
+			}
+
+			if( !EditorApplication.isPlaying && !Utilities.AreScenesSaved() )
+			{
+				// Don't start the search if at least one scene is currently dirty (not saved)
+				Debug.LogError( "Save open scenes first!" );
+				return new SearchResult( false, null, null, this, searchParameters );
 			}
 
 			List<SearchResultGroup> searchResult = null;
 
-			// Get the scenes that are open right now
-			SceneSetup[] initialSceneSetup = !EditorApplication.isPlaying ? EditorSceneManager.GetSceneManagerSetup() : null;
+			isInPlayMode = EditorApplication.isPlaying;
+#if UNITY_2018_3_OR_NEWER
+			openPrefabStagePrefabAsset = null;
+			string openPrefabStageAssetPath = null;
+			openPrefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+			if( openPrefabStage != null )
+			{
+				if( !openPrefabStage.stageHandle.IsValid() )
+					openPrefabStage = null;
+				else
+				{
+					if( openPrefabStage.scene.isDirty )
+					{
+						// Don't start the search if a prefab stage is currently open and dirty (not saved)
+						Debug.LogError( "Save open prefabs first!" );
+						return new SearchResult( false, null, null, this, searchParameters );
+					}
 
-			// Make sure the AssetDatabase is up-to-date
+#if UNITY_2020_1_OR_NEWER
+					string prefabAssetPath = openPrefabStage.assetPath;
+#else
+					string prefabAssetPath = openPrefabStage.prefabAssetPath;
+#endif
+					openPrefabStagePrefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>( prefabAssetPath );
+					openPrefabStageAssetPath = prefabAssetPath;
+
+#if UNITY_2020_1_OR_NEWER
+					openPrefabStageContextObject = openPrefabStage.openedFromInstanceRoot;
+#endif
+				}
+			}
+#endif
+
+			// Get the scenes that are open right now
+			SceneSetup[] initialSceneSetup = !isInPlayMode ? EditorSceneManager.GetSceneManagerSetup() : null;
+
+			// Make sure that the AssetDatabase is up-to-date
 			AssetDatabase.SaveAssets();
 
 			try
 			{
+				// Initialize commonly used variables
+				searchResult = new List<SearchResultGroup>(); // Overall search results
+
+				currentSearchedObject = null;
 				currentDepth = 0;
 				searchedObjectsCount = 0;
 				searchStartTime = EditorApplication.timeSinceStartup;
 
-				this.fieldModifiers = searchParameters.fieldModifiers | BindingFlags.Instance | BindingFlags.DeclaredOnly;
-				this.propertyModifiers = searchParameters.propertyModifiers | BindingFlags.Instance | BindingFlags.DeclaredOnly;
-				this.searchDepthLimit = searchParameters.searchDepthLimit;
+				searchDepthLimit = searchParameters.searchDepthLimit;
+				dontSearchInSourceAssets = searchParameters.dontSearchInSourceAssets;
 
-				// Initialize commonly used variables
-				searchResult = new List<SearchResultGroup>(); // Overall search results
-
-				if( typeToVariables == null )
-					typeToVariables = new Dictionary<Type, VariableGetterHolder[]>( 4096 );
-				else if( prevFieldModifiers != fieldModifiers || prevPropertyModifiers != propertyModifiers )
-					typeToVariables.Clear();
-
-				if( searchedObjects == null )
-					searchedObjects = new Dictionary<string, ReferenceNode>( 32768 );
-				else
-					searchedObjects.Clear();
-
-				if( callStack == null )
-					callStack = new Stack<object>( 64 );
-				else
-					callStack.Clear();
-
-				if( objectsToSearchSet == null )
-					objectsToSearchSet = new HashSet<Object>();
-				else
-					objectsToSearchSet.Clear();
-
-				if( sceneObjectsToSearchSet == null )
-					sceneObjectsToSearchSet = new HashSet<Object>();
-				else
-					sceneObjectsToSearchSet.Clear();
-
-				if( sceneObjectsToSearchScenesSet == null )
-					sceneObjectsToSearchScenesSet = new HashSet<string>();
-				else
-					sceneObjectsToSearchScenesSet.Clear();
-
-				if( assetsToSearchSet == null )
-					assetsToSearchSet = new HashSet<Object>();
-				else
-					assetsToSearchSet.Clear();
-
-				if( assetsToSearchPathsSet == null )
-					assetsToSearchPathsSet = new HashSet<string>();
-				else
-					assetsToSearchPathsSet.Clear();
+				searchedObjects.Clear();
+				animationClipUniqueBindings.Clear();
+				callStack.Clear();
+				objectsToSearchSet.Clear();
+				sceneObjectsToSearchScenesSet.Clear();
+				assetsToSearchSet.Clear();
+				assetsToSearchPathsSet.Clear();
+				assetsToSearchRootPrefabs.Clear();
+				excludedAssetsPathsSet.Clear();
+				alwaysSearchedExtensionsSet.Clear();
+				shaderIncludesToSearchSet.Clear();
+#if UNITY_2017_3_OR_NEWER
+				assemblyDefinitionFilesToSearch.Clear();
+#endif
 
 				if( assetDependencyCache == null )
 				{
@@ -219,34 +200,7 @@ namespace AssetUsageDetectorNamespace
 				foreach( var cacheEntry in assetDependencyCache.Values )
 					cacheEntry.searchResult = CacheEntry.Result.Unknown;
 
-				if( typeToSearchFunction == null )
-				{
-					typeToSearchFunction = new Dictionary<Type, Func<Object, ReferenceNode>>()
-					{
-						{ typeof( GameObject ), SearchGameObject },
-						{ typeof( Material ), SearchMaterial },
-						{ typeof( RuntimeAnimatorController ), SearchAnimatorController },
-						{ typeof( AnimatorOverrideController ), SearchAnimatorController },
-						{ typeof( AnimatorController ), SearchAnimatorController },
-						{ typeof( AnimatorStateMachine ), SearchAnimatorStateMachine },
-						{ typeof( AnimatorState ), SearchAnimatorState },
-						{ typeof( AnimatorStateTransition ), SearchAnimatorStateTransition },
-						{ typeof( BlendTree ), SearchBlendTree },
-						{ typeof( AnimationClip ), SearchAnimationClip },
-#if UNITY_2017_1_OR_NEWER
-						{ typeof( SpriteAtlas ), SearchSpriteAtlas },
-#endif
-					};
-				}
-
-				prevFieldModifiers = fieldModifiers;
-				prevPropertyModifiers = propertyModifiers;
-
-				searchPrefabConnections = false;
-				searchMonoBehavioursForScript = false;
-				searchRenderers = false;
-				searchMaterialsForShader = false;
-				searchMaterialsForTexture = false;
+				lastRefreshedCacheEntry = null;
 
 				// Store the searched objects(s) in HashSets
 				HashSet<string> folderContentsSet = new HashSet<string>();
@@ -258,13 +212,13 @@ namespace AssetUsageDetectorNamespace
 					if( obj.IsFolder() )
 						folderContentsSet.UnionWith( Utilities.EnumerateFolderContents( obj ) );
 					else
-						AddSearchedObjectToFilteredSets( obj );
+						AddSearchedObjectToFilteredSets( obj, true );
 				}
 
 				foreach( string filePath in folderContentsSet )
 				{
 					// Skip scene assets
-					if( filePath.EndsWith( ".unity" ) )
+					if( filePath.EndsWithFast( ".unity" ) )
 						continue;
 
 					Object[] assets = AssetDatabase.LoadAllAssetsAtPath( filePath );
@@ -272,60 +226,55 @@ namespace AssetUsageDetectorNamespace
 						continue;
 
 					for( int i = 0; i < assets.Length; i++ )
-						AddSearchedObjectToFilteredSets( assets[i] );
+						AddSearchedObjectToFilteredSets( assets[i], true );
 				}
 
-				foreach( Object obj in objectsToSearchSet )
+				// Find Project Settings to search for references. Don't search Project Settings if searched object(s) are all scene objects
+				// as Project Settings can't hold references to scene objects
+				string[] projectSettingsToSearch = new string[0];
+				if( searchParameters.searchInProjectSettings && assetsToSearchSet.Count > 0 )
 				{
-					if( obj is Texture )
-					{
-						searchRenderers = true;
-						searchMaterialsForTexture = true;
-					}
-					else if( obj is Material )
-					{
-						searchRenderers = true;
-					}
-					else if( obj is MonoScript )
-					{
-						searchMonoBehavioursForScript = true;
-					}
-					else if( obj is Shader )
-					{
-						searchRenderers = true;
-						searchMaterialsForShader = true;
-					}
-					else if( obj is GameObject )
-					{
-						searchPrefabConnections = true;
-					}
+					string[] projectSettingsAssets = Directory.GetFiles( "ProjectSettings" );
+					projectSettingsToSearch = new string[projectSettingsAssets.Length];
+					for( int i = 0; i < projectSettingsAssets.Length; i++ )
+						projectSettingsToSearch[i] = "ProjectSettings/" + Path.GetFileName( projectSettingsAssets[i] );
+
+					// AssetDatabase.GetDependencies doesn't work with Project Settings assets. By adding these assets to assetsToSearchPathsSet,
+					// we make sure that AssetHasAnyReference returns true for these assets and they don't get excluded from the search
+					assetsToSearchPathsSet.UnionWith( projectSettingsToSearch );
 				}
 
 				// Find the scenes to search for references
-				HashSet<string> openScenes = null;
-				if( EditorApplication.isPlaying )
+				HashSet<string> scenesToSearch = new HashSet<string>();
+				if( searchParameters.searchInScenesSubset != null && searchParameters.searchInScenesSubset.Length > 0 )
 				{
-					// In Play mode, only open scenes can be searched
-					openScenes = new HashSet<string>();
-					for( int i = 0; i < EditorSceneManager.loadedSceneCount; i++ )
+					foreach( Object obj in searchParameters.searchInScenesSubset )
 					{
-						Scene scene = EditorSceneManager.GetSceneAt( i );
-						if( scene.IsValid() )
-							openScenes.Add( scene.path );
+						if( obj == null || obj.Equals( null ) )
+							continue;
+
+						if( !obj.IsAsset() )
+							continue;
+
+						if( obj.IsFolder() )
+						{
+							string[] folderContents = AssetDatabase.FindAssets( "t:SceneAsset", new string[] { AssetDatabase.GetAssetPath( obj ) } );
+							if( folderContents == null )
+								continue;
+
+							for( int i = 0; i < folderContents.Length; i++ )
+								scenesToSearch.Add( AssetDatabase.GUIDToAssetPath( folderContents[i] ) );
+						}
+						else if( obj is SceneAsset )
+							scenesToSearch.Add( AssetDatabase.GetAssetPath( obj ) );
 					}
 				}
-
-				HashSet<string> scenesToSearch = new HashSet<string>();
-				if( ( searchParameters.searchInScenes & SceneSearchMode.AllScenes ) == SceneSearchMode.AllScenes )
+				else if( ( searchParameters.searchInScenes & SceneSearchMode.AllScenes ) == SceneSearchMode.AllScenes )
 				{
 					// Get all scenes from the Assets folder
 					string[] sceneGuids = AssetDatabase.FindAssets( "t:SceneAsset" );
 					for( int i = 0; i < sceneGuids.Length; i++ )
-					{
-						string scenePath = AssetDatabase.GUIDToAssetPath( sceneGuids[i] );
-						if( !EditorApplication.isPlaying || openScenes.Contains( scenePath ) )
-							scenesToSearch.Add( scenePath );
-					}
+						scenesToSearch.Add( AssetDatabase.GUIDToAssetPath( sceneGuids[i] ) );
 				}
 				else
 				{
@@ -347,57 +296,121 @@ namespace AssetUsageDetectorNamespace
 						EditorBuildSettingsScene[] scenesTemp = EditorBuildSettings.scenes;
 						for( int i = 0; i < scenesTemp.Length; i++ )
 						{
-							if( ( searchInScenesInBuildTickedAll || scenesTemp[i].enabled ) && ( !EditorApplication.isPlaying || openScenes.Contains( scenesTemp[i].path ) ) )
+							if( ( searchInScenesInBuildTickedAll || scenesTemp[i].enabled ) )
 								scenesToSearch.Add( scenesTemp[i].path );
 						}
 					}
 				}
 
-				// By default, search only serializable variables for references
-				searchSerializableVariablesOnly = true;
+				// In Play mode, only open scenes can be searched
+				if( isInPlayMode )
+				{
+					HashSet<string> openScenes = new HashSet<string>();
+					for( int i = 0; i < EditorSceneManager.loadedSceneCount; i++ )
+					{
+						Scene scene = EditorSceneManager.GetSceneAt( i );
+						if( scene.IsValid() )
+							openScenes.Add( scene.path );
+					}
+
+					scenesToSearch.RemoveWhere( ( path ) =>
+					{
+						if( !openScenes.Contains( path ) )
+						{
+							Debug.Log( "Can't search unloaded scenes while in play mode, skipped " + path );
+							return true;
+						}
+
+						return false;
+					} );
+				}
+
+				// Initialize data used by search functions
+				InitializeSearchFunctionsData( searchParameters );
 
 				// Initialize the nodes of searched asset(s)
 				foreach( Object obj in objectsToSearchSet )
-				{
-					BeginSearchObject( obj );
+					searchedObjects.Add( obj.Hash(), PopReferenceNode( obj ) );
 
-					string objHash = obj.Hash();
-					ReferenceNode referenceNode;
-					if( !searchedObjects.TryGetValue( objHash, out referenceNode ) || referenceNode == null )
-						searchedObjects[objHash] = PopReferenceNode( obj );
-				}
+				// Progressbar values
+				int searchProgress = 0;
+				int searchTotalProgress = scenesToSearch.Count;
+				if( isInPlayMode && searchParameters.searchInScenes != SceneSearchMode.None )
+					searchTotalProgress++; // DontDestroyOnLoad scene
+
+				if( searchParameters.showDetailedProgressBar )
+					searchTotalProgress += projectSettingsToSearch.Length;
 
 				// Don't search assets if searched object(s) are all scene objects as assets can't hold references to scene objects
 				if( searchParameters.searchInAssetsFolder && assetsToSearchSet.Count > 0 )
 				{
-					currentSearchResultGroup = new SearchResultGroup( "Project View (Assets)", false );
+					currentSearchResultGroup = new SearchResultGroup( "Project Window (Assets)", SearchResultGroup.GroupType.Assets );
 
 					// Get the paths of all assets that are to be searched
 					IEnumerable<string> assetPaths;
-					if( searchParameters.searchInAssetsSubset == null )
-						assetPaths = AssetDatabase.GetAllAssetPaths();
+					if( searchParameters.searchInAssetsSubset == null || searchParameters.searchInAssetsSubset.Length == 0 )
+					{
+						string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
+						assetPaths = allAssetPaths;
+
+						if( searchParameters.showDetailedProgressBar )
+							searchTotalProgress += allAssetPaths.Length;
+					}
 					else
 					{
 						folderContentsSet.Clear();
 
-						foreach( Object target in searchParameters.searchInAssetsSubset )
+						foreach( Object obj in searchParameters.searchInAssetsSubset )
 						{
-							if( target == null || target.Equals( null ) )
+							if( obj == null || obj.Equals( null ) )
 								continue;
 
-							if( target.IsFolder() )
-								folderContentsSet.UnionWith( Utilities.EnumerateFolderContents( target ) );
+							if( !obj.IsAsset() )
+								continue;
+
+							if( obj.IsFolder() )
+								folderContentsSet.UnionWith( Utilities.EnumerateFolderContents( obj ) );
 							else
-								folderContentsSet.Add( AssetDatabase.GetAssetPath( target ) );
+								folderContentsSet.Add( AssetDatabase.GetAssetPath( obj ) );
 						}
 
 						assetPaths = folderContentsSet;
+
+						if( searchParameters.showDetailedProgressBar )
+							searchTotalProgress += folderContentsSet.Count;
 					}
+
+					// Calculate the path(s) of the assets that won't be searched for references
+					if( searchParameters.excludedAssetsFromSearch != null )
+					{
+						foreach( Object obj in searchParameters.excludedAssetsFromSearch )
+						{
+							if( obj == null || obj.Equals( null ) )
+								continue;
+
+							if( !obj.IsAsset() )
+								continue;
+
+							if( obj.IsFolder() )
+								excludedAssetsPathsSet.UnionWith( Utilities.EnumerateFolderContents( obj ) );
+							else
+								excludedAssetsPathsSet.Add( AssetDatabase.GetAssetPath( obj ) );
+						}
+					}
+
+					if( EditorUtility.DisplayCancelableProgressBar( "Please wait...", "Searching assets", 0f ) )
+						throw new Exception( "Search aborted" );
 
 					foreach( string path in assetPaths )
 					{
+						if( searchParameters.showDetailedProgressBar && ++searchProgress % 30 == 1 && EditorUtility.DisplayCancelableProgressBar( "Please wait...", "Searching assets", (float) searchProgress / searchTotalProgress ) )
+							throw new Exception( "Search aborted" );
+
+						if( excludedAssetsPathsSet.Contains( path ) )
+							continue;
+
 						// If asset resides inside the Assets directory and is not a scene asset
-						if( path.StartsWith( "Assets/" ) && !path.EndsWith( ".unity" ) )
+						if( path.StartsWithFast( "Assets/" ) && !path.EndsWithFast( ".unity" ) )
 						{
 							if( !AssetHasAnyReference( path ) )
 								continue;
@@ -422,21 +435,86 @@ namespace AssetUsageDetectorNamespace
 						searchResult.Add( currentSearchResultGroup );
 				}
 
-				// Search non-serializable variables for references only if we are currently searching a scene and the editor is in play mode
-				if( EditorApplication.isPlaying )
+				// Search all assets inside the ProjectSettings folder
+				if( projectSettingsToSearch.Length > 0 )
+				{
+					currentSearchResultGroup = new SearchResultGroup( "Project Settings", SearchResultGroup.GroupType.ProjectSettings );
+
+					if( EditorUtility.DisplayCancelableProgressBar( "Please wait...", "Searching Project Settings", (float) searchProgress / searchTotalProgress ) )
+						throw new Exception( "Search aborted" );
+
+					for( int i = 0; i < projectSettingsToSearch.Length; i++ )
+					{
+						if( searchParameters.showDetailedProgressBar && ++searchProgress % 30 == 1 && EditorUtility.DisplayCancelableProgressBar( "Please wait...", "Searching Project Settings", (float) searchProgress / searchTotalProgress ) )
+							throw new Exception( "Search aborted" );
+
+						Object[] assets = AssetDatabase.LoadAllAssetsAtPath( projectSettingsToSearch[i] );
+						if( assets != null && assets.Length > 0 )
+						{
+							for( int j = 0; j < assets.Length; j++ )
+								BeginSearchObject( assets[j] );
+						}
+					}
+
+					if( currentSearchResultGroup.NumberOfReferences > 0 )
+						searchResult.Add( currentSearchResultGroup );
+				}
+
+				// Search non-serializable variables for references while searching a scene in play mode
+				if( isInPlayMode )
 					searchSerializableVariablesOnly = false;
 
-				foreach( string scenePath in scenesToSearch )
+				if( scenesToSearch.Count > 0 )
 				{
-					// Search scene for references
-					if( !string.IsNullOrEmpty( scenePath ) )
-						SearchScene( scenePath, searchResult, initialSceneSetup );
+					// Calculate the path(s) of the scenes that won't be searched for references
+					HashSet<string> excludedScenesPathsSet = new HashSet<string>();
+					if( searchParameters.excludedScenesFromSearch != null )
+					{
+						foreach( Object obj in searchParameters.excludedScenesFromSearch )
+						{
+							if( obj == null || obj.Equals( null ) )
+								continue;
+
+							if( !obj.IsAsset() )
+								continue;
+
+							if( obj.IsFolder() )
+							{
+								string[] folderContents = AssetDatabase.FindAssets( "t:SceneAsset", new string[] { AssetDatabase.GetAssetPath( obj ) } );
+								if( folderContents == null )
+									continue;
+
+								for( int i = 0; i < folderContents.Length; i++ )
+									excludedScenesPathsSet.Add( AssetDatabase.GUIDToAssetPath( folderContents[i] ) );
+							}
+							else if( obj is SceneAsset )
+								excludedScenesPathsSet.Add( AssetDatabase.GetAssetPath( obj ) );
+						}
+					}
+
+					foreach( string scenePath in scenesToSearch )
+					{
+						if( EditorUtility.DisplayCancelableProgressBar( "Please wait...", "Searching scene: " + scenePath, (float) ++searchProgress / searchTotalProgress ) )
+							throw new Exception( "Search aborted" );
+
+						// Search scene for references
+						if( string.IsNullOrEmpty( scenePath ) )
+							continue;
+
+						if( excludedScenesPathsSet.Contains( scenePath ) )
+							continue;
+
+						SearchScene( scenePath, searchResult, searchParameters.lazySceneSearch, initialSceneSetup );
+					}
 				}
 
 				// Search through all the GameObjects under the DontDestroyOnLoad scene (if exists)
-				if( EditorApplication.isPlaying )
+				if( isInPlayMode && searchParameters.searchInScenes != SceneSearchMode.None )
 				{
-					currentSearchResultGroup = new SearchResultGroup( "DontDestroyOnLoad", false );
+					if( EditorUtility.DisplayCancelableProgressBar( "Please wait...", "Searching scene: DontDestroyOnLoad", 1f ) )
+						throw new Exception( "Search aborted" );
+
+					currentSearchResultGroup = new SearchResultGroup( "DontDestroyOnLoad", SearchResultGroup.GroupType.DontDestroyOnLoad );
 
 					GameObject[] rootGameObjects = GetDontDestroyOnLoadObjects();
 					for( int i = 0; i < rootGameObjects.Length; i++ )
@@ -446,16 +524,42 @@ namespace AssetUsageDetectorNamespace
 						searchResult.Add( currentSearchResultGroup );
 				}
 
+				// Searching source assets last prevents some references from being excluded due to callStack.ContainsFast
+				if( !dontSearchInSourceAssets )
+				{
+					searchingSourceAssets = true;
+
+					foreach( Object obj in objectsToSearchSet )
+					{
+						currentSearchedObject = obj;
+						SearchObject( obj );
+					}
+
+					searchingSourceAssets = false;
+				}
+
 				InitializeSearchResultNodes( searchResult );
 
 				// Log some c00l stuff to console
 				Debug.Log( "Searched " + searchedObjectsCount + " objects in " + ( EditorApplication.timeSinceStartup - searchStartTime ).ToString( "F2" ) + " seconds" );
 
-				return new SearchResult( true, searchResult, initialSceneSetup );
+				return new SearchResult( true, searchResult, initialSceneSetup, this, searchParameters );
 			}
 			catch( Exception e )
 			{
-				Debug.LogException( e );
+				StringBuilder sb = new StringBuilder( objectsToSearchSet.Count * 50 + callStack.Count * 50 + 1000 );
+				sb.AppendLine( "<b>AssetUsageDetector Error:</b>" ).AppendLine().Append( e ).AppendLine();
+
+				Object latestUnityObjectInCallStack = AppendCallStackToStringBuilder( sb );
+
+				sb.AppendLine( "Searching references of: " );
+				foreach( Object obj in objectsToSearchSet )
+				{
+					if( obj )
+						sb.Append( obj.name ).Append( " (" ).Append( obj.GetType() ).AppendLine( ")" );
+				}
+
+				Debug.LogError( sb.ToString(), latestUnityObjectInCallStack );
 
 				try
 				{
@@ -464,38 +568,76 @@ namespace AssetUsageDetectorNamespace
 				catch
 				{ }
 
-				return new SearchResult( false, searchResult, initialSceneSetup );
+				return new SearchResult( false, searchResult, initialSceneSetup, this, searchParameters );
 			}
 			finally
 			{
 				currentSearchResultGroup = null;
-				currentObject = null;
+				currentSearchedObject = null;
+
+				EditorUtility.ClearProgressBar();
+
+#if UNITY_2018_3_OR_NEWER
+				// If a prefab stage was open when the search was triggered, try reopening the prefab stage after the search is completed
+				if( !string.IsNullOrEmpty( openPrefabStageAssetPath ) )
+				{
+#if UNITY_2020_1_OR_NEWER
+					bool shouldOpenPrefabStageWithoutContext = true;
+					if( openPrefabStageContextObject != null && !openPrefabStageContextObject.Equals( null ) )
+					{
+						try
+						{
+							// Try to access this method: https://github.com/Unity-Technologies/UnityCsReference/blob/73925b1711847c067e607ec8371f8e9ffe7ab65d/Editor/Mono/SceneManagement/StageManager/PrefabStage/PrefabStageUtility.cs#L61-L65
+							MethodInfo prefabStageOpenerWithContext = typeof( PrefabStageUtility ).GetMethod( "OpenPrefab", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, null, new Type[2] { typeof( string ), typeof( GameObject ) }, null );
+							if( prefabStageOpenerWithContext != null )
+							{
+								prefabStageOpenerWithContext.Invoke( null, new object[2] { openPrefabStageAssetPath, openPrefabStageContextObject } );
+								shouldOpenPrefabStageWithoutContext = false;
+							}
+						}
+						catch { }
+					}
+
+					if( shouldOpenPrefabStageWithoutContext )
+#endif
+					{
+						AssetDatabase.OpenAsset( AssetDatabase.LoadAssetAtPath<GameObject>( openPrefabStageAssetPath ) );
+					}
+				}
+#endif
 			}
 		}
 
 		private void InitializeSearchResultNodes( List<SearchResultGroup> searchResult )
 		{
 			for( int i = 0; i < searchResult.Count; i++ )
-				searchResult[i].InitializeNodes();
+				searchResult[i].InitializeNodes( GetReferenceNode );
 
 			// If there are any empty groups after node initialization, remove those groups
 			for( int i = searchResult.Count - 1; i >= 0; i-- )
 			{
-				if( searchResult[i].NumberOfReferences == 0 )
-					searchResult.RemoveAt( i );
+				if( !searchResult[i].PendingSearch && searchResult[i].NumberOfReferences == 0 )
+					searchResult.RemoveAtFast( i );
 			}
 		}
 
 		// Checks if object is asset or scene object and adds it to the corresponding HashSet(s)
-		private void AddSearchedObjectToFilteredSets( Object obj )
+		private void AddSearchedObjectToFilteredSets( Object obj, bool expandGameObjects )
 		{
 			if( obj == null || obj.Equals( null ) )
 				return;
 
-			if( obj is SceneAsset )
-				return;
-
 			objectsToSearchSet.Add( obj );
+
+#if UNITY_2018_3_OR_NEWER
+			// When searching for references of a prefab stage object, try adding its corresponding prefab asset to the searched assets, as well
+			if( openPrefabStage != null && openPrefabStagePrefabAsset != null && obj is GameObject && openPrefabStage.IsPartOfPrefabContents( (GameObject) obj ) )
+			{
+				GameObject prefabStageObjectSource = ( (GameObject) obj ).FollowSymmetricHierarchy( openPrefabStage.prefabContentsRoot, openPrefabStagePrefabAsset );
+				if( prefabStageObjectSource != null )
+					AddSearchedObjectToFilteredSets( prefabStageObjectSource, expandGameObjects );
+			}
+#endif
 
 			bool isAsset = obj.IsAsset();
 			if( isAsset )
@@ -504,54 +646,96 @@ namespace AssetUsageDetectorNamespace
 
 				string assetPath = AssetDatabase.GetAssetPath( obj );
 				if( !string.IsNullOrEmpty( assetPath ) )
+				{
 					assetsToSearchPathsSet.Add( assetPath );
+					if( dontSearchInSourceAssets && AssetDatabase.IsMainAsset( obj ) )
+						excludedAssetsPathsSet.Add( assetPath );
+				}
+
+				GameObject go = null;
+				if( obj is GameObject )
+					go = (GameObject) obj;
+				else if( obj is Component )
+					go = ( (Component) obj ).gameObject;
+
+				if( go != null )
+				{
+					Transform transform = go.transform;
+					bool shouldAddRootPrefabEntry = true;
+					for( int i = assetsToSearchRootPrefabs.Count - 1; i >= 0; i-- )
+					{
+						Transform rootTransform = assetsToSearchRootPrefabs[i].transform;
+						if( transform.IsChildOf( rootTransform ) )
+						{
+							shouldAddRootPrefabEntry = false;
+							break;
+						}
+
+						if( rootTransform.IsChildOf( transform ) )
+							assetsToSearchRootPrefabs.RemoveAt( i );
+					}
+
+					if( shouldAddRootPrefabEntry )
+						assetsToSearchRootPrefabs.Add( go );
+				}
 			}
 			else
 			{
-				sceneObjectsToSearchSet.Add( obj );
-
 				if( obj is GameObject )
 					sceneObjectsToSearchScenesSet.Add( ( (GameObject) obj ).scene.path );
 				else if( obj is Component )
 					sceneObjectsToSearchScenesSet.Add( ( (Component) obj ).gameObject.scene.path );
 			}
 
-			if( obj is GameObject )
+			if( expandGameObjects && obj is GameObject )
 			{
 				// If searched asset is a GameObject, include its components in the search
 				Component[] components = ( (GameObject) obj ).GetComponents<Component>();
-				for( int j = 0; j < components.Length; j++ )
+				for( int i = 0; i < components.Length; i++ )
 				{
-					if( components[j] == null || components[j].Equals( null ) )
+					if( components[i] == null || components[i].Equals( null ) )
 						continue;
 
-					objectsToSearchSet.Add( components[j] );
+					objectsToSearchSet.Add( components[i] );
 
 					if( isAsset )
-						assetsToSearchSet.Add( components[j] );
-					else
-						sceneObjectsToSearchSet.Add( components[j] );
+						assetsToSearchSet.Add( components[i] );
 				}
+			}
+			else if( obj is Component )
+			{
+				// Include searched components' GameObjects in the search, as well
+				AddSearchedObjectToFilteredSets( ( (Component) obj ).gameObject, false );
 			}
 		}
 
 		// Search a scene for references
-		private void SearchScene( string scenePath, List<SearchResultGroup> searchResult, SceneSetup[] initialSceneSetup )
+		private void SearchScene( string scenePath, List<SearchResultGroup> searchResult, bool lazySearch, SceneSetup[] initialSceneSetup )
 		{
 			Scene scene = EditorSceneManager.GetSceneByPath( scenePath );
+			if( isInPlayMode && !scene.isLoaded )
+				return;
 
 			bool canContainSceneObjectReference = scene.isLoaded && ( !EditorSceneManager.preventCrossSceneReferences || sceneObjectsToSearchScenesSet.Contains( scenePath ) );
 			if( !canContainSceneObjectReference )
 			{
-				bool canContainAssetReference = assetsToSearchSet.Count > 0 && ( EditorApplication.isPlaying || AssetHasAnyReference( scenePath ) );
+				bool canContainAssetReference = assetsToSearchSet.Count > 0 && ( isInPlayMode || AssetHasAnyReference( scenePath ) );
 				if( !canContainAssetReference )
 					return;
 			}
 
-			if( !EditorApplication.isPlaying )
-				scene = EditorSceneManager.OpenScene( scenePath, OpenSceneMode.Additive );
+			if( !scene.isLoaded )
+			{
+				if( lazySearch )
+				{
+					searchResult.Add( new SearchResultGroup( scenePath, SearchResultGroup.GroupType.Scene, true, true ) );
+					return;
+				}
 
-			currentSearchResultGroup = new SearchResultGroup( scenePath, true );
+				scene = EditorSceneManager.OpenScene( scenePath, OpenSceneMode.Additive );
+			}
+
+			currentSearchResultGroup = new SearchResultGroup( scenePath, SearchResultGroup.GroupType.Scene );
 
 			// Search through all the GameObjects in the scene
 			GameObject[] rootGameObjects = scene.GetRootGameObjects();
@@ -561,7 +745,7 @@ namespace AssetUsageDetectorNamespace
 			// If no references are found in the scene and if the scene is not part of the initial scene setup, close it
 			if( currentSearchResultGroup.NumberOfReferences == 0 )
 			{
-				if( !EditorApplication.isPlaying )
+				if( !isInPlayMode )
 				{
 					bool sceneIsOneOfInitials = false;
 					for( int i = 0; i < initialSceneSetup.Length; i++ )
@@ -603,10 +787,10 @@ namespace AssetUsageDetectorNamespace
 			if( obj is SceneAsset )
 				return;
 
-			currentObject = obj;
+			currentSearchedObject = obj;
 
 			ReferenceNode searchResult = SearchObject( obj );
-			if( searchResult != null && currentSearchResultGroup != null )
+			if( searchResult != null )
 				currentSearchResultGroup.AddReference( searchResult );
 		}
 
@@ -617,21 +801,24 @@ namespace AssetUsageDetectorNamespace
 				return null;
 
 			// Avoid recursion (which leads to stackoverflow exception) using a stack
-			if( callStack.Contains( obj ) )
+			if( callStack.ContainsFast( obj ) )
 				return null;
+
+			bool searchingSourceAsset = searchingSourceAssets && ReferenceEquals( currentSearchedObject, obj );
 
 			// Hashing does not work well with structs all the time, don't cache search results for structs
 			string objHash = null;
-
-			// pzy: 怎么会引用 hot 里的一个类型？
-			//if( !( obj is SerializationValueType ) )
+			if( !( obj is ValueType ) )
 			{
 				objHash = obj.Hash();
 
-				// If object was searched before, return the cached result
-				ReferenceNode cachedResult;
-				if( searchedObjects.TryGetValue( objHash, out cachedResult ) )
-					return cachedResult;
+				if( !searchingSourceAsset )
+				{
+					// If object was searched before, return the cached result
+					ReferenceNode cachedResult;
+					if( searchedObjects.TryGetValue( objHash, out cachedResult ) )
+						return cachedResult;
+				}
 			}
 
 			searchedObjectsCount++;
@@ -640,43 +827,41 @@ namespace AssetUsageDetectorNamespace
 			Object unityObject = obj as Object;
 			if( unityObject != null )
 			{
-				// If we hit a searched asset
-				if( objectsToSearchSet.Contains( unityObject ) )
+				// If the Object is an asset, search it in detail only if its dependencies contain at least one of the searched asset(s)
+				string assetPath = null;
+				if( unityObject.IsAsset() )
 				{
-					// If we were searching for references of the searched asset that we hit (or a component of it),
-					// ignore the hit since the searched asset doesn't have a meaningful reference to itself at the moment
-					// If there is a meaningful reference, it will become available when calling the SearchX functions below
-					if( currentObject != unityObject && ( !( unityObject is Component ) || currentObject != ( (Component) unityObject ).gameObject ) )
+					if( assetsToSearchSet.Count == 0 )
 					{
-						result = PopReferenceNode( unityObject );
-						searchedObjects.Add( objHash, result );
+						searchedObjects.Add( objHash, null );
+						return null;
+					}
 
-						return result;
+					assetPath = AssetDatabase.GetAssetPath( unityObject );
+					if( !AssetHasAnyReference( assetPath ) )
+					{
+						searchedObjects.Add( objHash, null );
+						return null;
 					}
 				}
 
-				// If the Object is an asset, search it in detail only if its dependencies contain at least one of the searched asset(s)
-				if( unityObject.IsAsset() && ( assetsToSearchSet.Count == 0 || !AssetHasAnyReference( AssetDatabase.GetAssetPath( unityObject ) ) ) )
-				{
-					searchedObjects.Add( objHash, null );
-					return null;
-				}
-
-				callStack.Push( unityObject );
+				callStack.Add( unityObject );
 
 				// Search the Object in detail
-				Func<Object, ReferenceNode> func;
-				if( typeToSearchFunction.TryGetValue( unityObject.GetType(), out func ) )
-					result = func( unityObject );
+				Func<Object, ReferenceNode> searchFunction;
+				if( assetPath != null && extensionToSearchFunction.TryGetValue( Utilities.GetFileExtension( assetPath ), out searchFunction ) && AssetDatabase.IsMainAsset( unityObject ) )
+					result = searchFunction( unityObject );
+				else if( typeToSearchFunction.TryGetValue( unityObject.GetType(), out searchFunction ) )
+					result = searchFunction( unityObject );
 				else if( unityObject is Component )
 					result = SearchComponent( unityObject );
 				else
 				{
 					result = PopReferenceNode( unityObject );
-					SearchFieldsAndPropertiesOf( result );
+					SearchVariablesWithSerializedObject( result );
 				}
 
-				callStack.Pop();
+				callStack.RemoveAt( callStack.Count - 1 );
 			}
 			else
 			{
@@ -684,14 +869,14 @@ namespace AssetUsageDetectorNamespace
 				if( currentDepth >= searchDepthLimit )
 					return null;
 
-				callStack.Push( obj );
+				callStack.Add( obj );
 				currentDepth++;
 
 				result = PopReferenceNode( obj );
-				SearchFieldsAndPropertiesOf( result );
+				SearchVariablesWithReflection( result );
 
 				currentDepth--;
-				callStack.Pop();
+				callStack.RemoveAt( callStack.Count - 1 );
 			}
 
 			if( result != null && result.NumberOfOutgoingLinks == 0 )
@@ -704,424 +889,33 @@ namespace AssetUsageDetectorNamespace
 			// and if the object is a UnityEngine.Object (if not, cache the result only if we have actually found something
 			// or we are at the root of the search; i.e. currentDepth == 0)
 			if( objHash != null && ( result != null || unityObject != null || currentDepth == 0 ) )
-				searchedObjects.Add( objHash, result );
-
-			return result;
-		}
-
-		private ReferenceNode SearchGameObject( Object unityObject )
-		{
-			GameObject go = (GameObject) unityObject;
-			ReferenceNode referenceNode = PopReferenceNode( go );
-
-			// Check if this GameObject's prefab is one of the selected assets
-			if( searchPrefabConnections )
 			{
-#if UNITY_2018_3_OR_NEWER
-				Object prefab = PrefabUtility.GetCorrespondingObjectFromSource( go );
-				if( objectsToSearchSet.Contains( prefab ) && go == PrefabUtility.GetNearestPrefabInstanceRoot( go ) )
-#else
-				Object prefab = PrefabUtility.GetPrefabParent( go );
-				if( objectsToSearchSet.Contains( prefab ) && go == PrefabUtility.FindRootGameObjectWithSameParentPrefab( go ) )
-#endif
-					referenceNode.AddLinkTo( GetReferenceNode( prefab ), "Prefab object" );
-			}
-
-			// Search through all the components of the object
-			Component[] components = go.GetComponents<Component>();
-			for( int i = 0; i < components.Length; i++ )
-				referenceNode.AddLinkTo( SearchObject( components[i] ) );
-
-			return referenceNode;
-		}
-
-		private ReferenceNode SearchComponent( Object unityObject )
-		{
-			Component component = (Component) unityObject;
-
-			// Ignore Transform component (no object field to search for)
-			if( component is Transform )
-				return null;
-
-			ReferenceNode referenceNode = PopReferenceNode( component );
-
-			if( searchMonoBehavioursForScript && component is MonoBehaviour )
-			{
-				// If a searched asset is script, check if this component is an instance of it
-				MonoScript script = MonoScript.FromMonoBehaviour( (MonoBehaviour) component );
-				if( objectsToSearchSet.Contains( script ) )
-					referenceNode.AddLinkTo( GetReferenceNode( script ) );
-			}
-			else if( searchRenderers && component is Renderer )
-			{
-				// If an asset is a shader, texture or material, and this component is a Renderer,
-				// search it for references
-				Material[] materials = ( (Renderer) component ).sharedMaterials;
-				for( int j = 0; j < materials.Length; j++ )
-					referenceNode.AddLinkTo( SearchObject( materials[j] ) );
-			}
-			else if( component is Animation )
-			{
-				// If this component is an Animation, search its animation clips for references
-				foreach( AnimationState anim in (Animation) component )
-					referenceNode.AddLinkTo( SearchObject( anim.clip ) );
-			}
-			else if( component is Animator )
-			{
-				// If this component is an Animator, search its animation clips for references
-				referenceNode.AddLinkTo( SearchObject( ( (Animator) component ).runtimeAnimatorController ) );
-			}
-#if UNITY_2017_2_OR_NEWER
-			else if( component is Tilemap )
-			{
-				// If this component is a Tilemap, search its tiles for references
-				TileBase[] tiles = new TileBase[( (Tilemap) component ).GetUsedTilesCount()];
-				( (Tilemap) component ).GetUsedTilesNonAlloc( tiles );
-
-				if( tiles != null )
+				if( !searchingSourceAsset )
+					searchedObjects.Add( objHash, result );
+				else if( result != null )
 				{
-					for( int i = 0; i < tiles.Length; i++ )
-						referenceNode.AddLinkTo( SearchObject( tiles[i] ), "Tile" );
+					result.CopyReferencesTo( searchedObjects[objHash] );
+					PoolReferenceNode( result );
 				}
 			}
-#endif
-#if UNITY_2017_1_OR_NEWER
-			else if( component is PlayableDirector )
-			{
-				// If this component is a PlayableDirectory, search its PlayableAsset's scene bindings for references
-				PlayableAsset playableAsset = ( (PlayableDirector) component ).playableAsset;
-				if( playableAsset != null && !playableAsset.Equals( null ) )
-				{
-					foreach( PlayableBinding binding in playableAsset.outputs )
-						referenceNode.AddLinkTo( SearchObject( ( (PlayableDirector) component ).GetGenericBinding( binding.sourceObject ) ), "Binding: " + binding.streamName );
-				}
-			}
-#endif
-
-			SearchFieldsAndPropertiesOf( referenceNode );
-
-			return referenceNode;
-		}
-
-		private ReferenceNode SearchMaterial( Object unityObject )
-		{
-			Material material = (Material) unityObject;
-			ReferenceNode referenceNode = PopReferenceNode( material );
-
-			if( searchMaterialsForShader && objectsToSearchSet.Contains( material.shader ) )
-				referenceNode.AddLinkTo( GetReferenceNode( material.shader ), "Shader" );
-
-			if( searchMaterialsForTexture )
-			{
-				// Search through all the textures attached to this material
-				// Credit: http://answers.unity3d.com/answers/1116025/view.html
-				Shader shader = material.shader;
-				int shaderPropertyCount = ShaderUtil.GetPropertyCount( shader );
-				for( int k = 0; k < shaderPropertyCount; k++ )
-				{
-					if( ShaderUtil.GetPropertyType( shader, k ) == ShaderUtil.ShaderPropertyType.TexEnv )
-					{
-						string propertyName = ShaderUtil.GetPropertyName( shader, k );
-						Texture assignedTexture = material.GetTexture( propertyName );
-						if( objectsToSearchSet.Contains( assignedTexture ) )
-							referenceNode.AddLinkTo( GetReferenceNode( assignedTexture ), "Shader property: " + propertyName );
-					}
-				}
-			}
-
-			return referenceNode;
-		}
-
-		private ReferenceNode SearchAnimatorController( Object unityObject )
-		{
-			RuntimeAnimatorController controller = (RuntimeAnimatorController) unityObject;
-			ReferenceNode referenceNode = PopReferenceNode( controller );
-
-			if( controller is AnimatorController )
-			{
-				AnimatorControllerLayer[] layers = ( (AnimatorController) controller ).layers;
-				for( int i = 0; i < layers.Length; i++ )
-				{
-					if( objectsToSearchSet.Contains( layers[i].avatarMask ) )
-						referenceNode.AddLinkTo( GetReferenceNode( layers[i].avatarMask ), layers[i].name + " Mask" );
-
-					referenceNode.AddLinkTo( SearchObject( layers[i].stateMachine ) );
-				}
-			}
-			else
-			{
-				AnimationClip[] animClips = controller.animationClips;
-				for( int i = 0; i < animClips.Length; i++ )
-					referenceNode.AddLinkTo( SearchObject( animClips[i] ) );
-			}
-
-			return referenceNode;
-		}
-
-		private ReferenceNode SearchAnimatorStateMachine( Object unityObject )
-		{
-			AnimatorStateMachine animatorStateMachine = (AnimatorStateMachine) unityObject;
-			ReferenceNode referenceNode = PopReferenceNode( animatorStateMachine );
-
-			ChildAnimatorStateMachine[] stateMachines = animatorStateMachine.stateMachines;
-			for( int i = 0; i < stateMachines.Length; i++ )
-				referenceNode.AddLinkTo( SearchObject( stateMachines[i].stateMachine ), "Child State Machine" );
-
-			ChildAnimatorState[] states = animatorStateMachine.states;
-			for( int i = 0; i < states.Length; i++ )
-				referenceNode.AddLinkTo( SearchObject( states[i].state ) );
-
-			if( searchMonoBehavioursForScript )
-			{
-				StateMachineBehaviour[] behaviours = animatorStateMachine.behaviours;
-				for( int i = 0; i < behaviours.Length; i++ )
-				{
-					MonoScript script = MonoScript.FromScriptableObject( behaviours[i] );
-					if( objectsToSearchSet.Contains( script ) )
-						referenceNode.AddLinkTo( GetReferenceNode( script ) );
-				}
-			}
-
-			return referenceNode;
-		}
-
-		private ReferenceNode SearchAnimatorState( Object unityObject )
-		{
-			AnimatorState animatorState = (AnimatorState) unityObject;
-			ReferenceNode referenceNode = PopReferenceNode( animatorState );
-
-			referenceNode.AddLinkTo( SearchObject( animatorState.motion ), "Motion" );
-
-			if( searchMonoBehavioursForScript )
-			{
-				StateMachineBehaviour[] behaviours = animatorState.behaviours;
-				for( int i = 0; i < behaviours.Length; i++ )
-				{
-					MonoScript script = MonoScript.FromScriptableObject( behaviours[i] );
-					if( objectsToSearchSet.Contains( script ) )
-						referenceNode.AddLinkTo( GetReferenceNode( script ) );
-				}
-			}
-
-			return referenceNode;
-		}
-
-		private ReferenceNode SearchAnimatorStateTransition( Object unityObject )
-		{
-			// Don't search AnimatorStateTransition objects, it will just return duplicate results of SearchAnimatorStateMachine
-			return PopReferenceNode( unityObject );
-		}
-
-		private ReferenceNode SearchBlendTree( Object unityObject )
-		{
-			BlendTree blendTree = (BlendTree) unityObject;
-			ReferenceNode referenceNode = PopReferenceNode( blendTree );
-
-			ChildMotion[] children = blendTree.children;
-			for( int i = 0; i < children.Length; i++ )
-				referenceNode.AddLinkTo( SearchObject( children[i].motion ), "Motion" );
-
-			return referenceNode;
-		}
-
-		private ReferenceNode SearchAnimationClip( Object unityObject )
-		{
-			AnimationClip clip = (AnimationClip) unityObject;
-			ReferenceNode referenceNode = PopReferenceNode( clip );
-
-			// Get all curves from animation clip
-			EditorCurveBinding[] objectCurves = AnimationUtility.GetObjectReferenceCurveBindings( clip );
-			for( int i = 0; i < objectCurves.Length; i++ )
-			{
-				// Search through all the keyframes in this curve
-				ObjectReferenceKeyframe[] keyframes = AnimationUtility.GetObjectReferenceCurve( clip, objectCurves[i] );
-				for( int j = 0; j < keyframes.Length; j++ )
-					referenceNode.AddLinkTo( SearchObject( keyframes[j].value ), "Keyframe: " + keyframes[j].time );
-			}
-
-			// Get all events from animation clip
-			AnimationEvent[] events = AnimationUtility.GetAnimationEvents( clip );
-			for( int i = 0; i < events.Length; i++ )
-				referenceNode.AddLinkTo( SearchObject( events[i].objectReferenceParameter ), "AnimationEvent: " + events[i].time );
-
-			return referenceNode;
-		}
-
-#if UNITY_2017_1_OR_NEWER
-		private ReferenceNode SearchSpriteAtlas( Object unityObject )
-		{
-			SpriteAtlas spriteAtlas = (SpriteAtlas) unityObject;
-			ReferenceNode referenceNode = PopReferenceNode( spriteAtlas );
-
-			SerializedObject spriteAtlasSO = new SerializedObject( spriteAtlas );
-			if( spriteAtlas.isVariant )
-			{
-				Object masterAtlas = spriteAtlasSO.FindProperty( "m_MasterAtlas" ).objectReferenceValue;
-				if( objectsToSearchSet.Contains( masterAtlas ) )
-					referenceNode.AddLinkTo( SearchObject( masterAtlas ), "Master Atlas" );
-			}
-
-#if UNITY_2018_2_OR_NEWER
-			Object[] packables = spriteAtlas.GetPackables();
-			if( packables != null )
-			{
-				for( int i = 0; i < packables.Length; i++ )
-					referenceNode.AddLinkTo( SearchObject( packables[i] ), "Packed Texture" );
-			}
-#else
-			SerializedProperty packables = spriteAtlasSO.FindProperty( "m_EditorData.packables" );
-			if( packables != null )
-			{
-				for( int i = 0, length = packables.arraySize; i < length; i++ )
-					referenceNode.AddLinkTo( SearchObject( packables.GetArrayElementAtIndex( i ).objectReferenceValue ), "Packed Texture" );
-			}
-#endif
-
-			return referenceNode;
-		}
-#endif
-
-		// Search through field and properties of an object for references
-		private void SearchFieldsAndPropertiesOf( ReferenceNode referenceNode )
-		{
-			// Get filtered variables for this object
-			VariableGetterHolder[] variables = GetFilteredVariablesForType( referenceNode.nodeObject.GetType() );
-			for( int i = 0; i < variables.Length; i++ )
-			{
-				// When possible, don't search non-serializable variables
-				if( searchSerializableVariablesOnly && !variables[i].isSerializable )
-					continue;
-
-				try
-				{
-					object variableValue = variables[i].Get( referenceNode.nodeObject );
-					if( variableValue == null )
-						continue;
-
-					if( !( variableValue is IEnumerable ) || variableValue is Transform )
-						referenceNode.AddLinkTo( SearchObject( variableValue ), ( variables[i].isProperty ? "Property: " : "Variable: " ) + variables[i].name );
-					else
-					{
-						// If the field is IEnumerable (possibly an array or collection), search through members of it
-						// Note that Transform IEnumerable (children of the transform) is not iterated
-						foreach( object arrayItem in (IEnumerable) variableValue )
-							referenceNode.AddLinkTo( SearchObject( arrayItem ), ( variables[i].isProperty ? "Property (IEnumerable): " : "Variable (IEnumerable): " ) + variables[i].name );
-					}
-				}
-				catch( UnassignedReferenceException )
-				{ }
-				catch( MissingReferenceException )
-				{ }
-			}
-		}
-
-		// Get filtered variables for a type
-		private VariableGetterHolder[] GetFilteredVariablesForType( Type type )
-		{
-			VariableGetterHolder[] result;
-			if( typeToVariables.TryGetValue( type, out result ) )
-				return result;
-
-			// This is the first time this type of object is seen, filter and cache its variables
-			// Variable filtering process:
-			// 1- skip Obsolete variables
-			// 2- skip primitive types, enums and strings
-			// 3- skip common Unity types that can't hold any references (e.g. Vector3, Rect, Color, Quaternion)
-
-			validVariables.Clear();
-
-			// Filter the fields
-			if( fieldModifiers != ( BindingFlags.Instance | BindingFlags.DeclaredOnly ) )
-			{
-				Type currType = type;
-				while( currType != typeof( object ) )
-				{
-					FieldInfo[] fields = currType.GetFields( fieldModifiers );
-					for( int i = 0; i < fields.Length; i++ )
-					{
-						// Skip obsolete fields
-						if( Attribute.IsDefined( fields[i], typeof( ObsoleteAttribute ) ) )
-							continue;
-
-						// Skip primitive types
-						if( fields[i].FieldType.IsPrimitiveUnityType() )
-							continue;
-
-						VariableGetVal getter = fields[i].CreateGetter( type );
-						if( getter != null )
-							validVariables.Add( new VariableGetterHolder( fields[i], getter, fields[i].IsSerializable() ) );
-					}
-
-					currType = currType.BaseType;
-				}
-			}
-
-			if( propertyModifiers != ( BindingFlags.Instance | BindingFlags.DeclaredOnly ) )
-			{
-				Type currType = type;
-				while( currType != typeof( object ) )
-				{
-					PropertyInfo[] properties = currType.GetProperties( propertyModifiers );
-					for( int i = 0; i < properties.Length; i++ )
-					{
-						// Skip obsolete properties
-						if( Attribute.IsDefined( properties[i], typeof( ObsoleteAttribute ) ) )
-							continue;
-
-						// Skip primitive types
-						if( properties[i].PropertyType.IsPrimitiveUnityType() )
-							continue;
-
-						// Additional filtering for properties:
-						// 1- Ignore "gameObject", "transform", "rectTransform" and "attachedRigidbody" properties of Component's to get more useful results
-						// 2- Ignore "canvasRenderer" and "canvas" properties of Graphic components
-						// 3 & 4- Prevent accessing properties of Unity that instantiate an existing resource (causing leak)
-						string propertyName = properties[i].Name;
-						if( typeof( Component ).IsAssignableFrom( currType ) && ( propertyName.Equals( "gameObject" ) ||
-							propertyName.Equals( "transform" ) || propertyName.Equals( "attachedRigidbody" ) || propertyName.Equals( "rectTransform" ) ) )
-							continue;
-						else if( typeof( UnityEngine.UI.Graphic ).IsAssignableFrom( currType ) &&
-							( propertyName.Equals( "canvasRenderer" ) || propertyName.Equals( "canvas" ) ) )
-							continue;
-						else if( typeof( MeshFilter ).IsAssignableFrom( currType ) && propertyName.Equals( "mesh" ) )
-							continue;
-						else if( typeof( Renderer ).IsAssignableFrom( currType ) &&
-							( propertyName.Equals( "sharedMaterial" ) || propertyName.Equals( "sharedMaterials" ) ) )
-							continue;
-						else if( ( propertyName.Equals( "material" ) || propertyName.Equals( "materials" ) ) &&
-							( typeof( Renderer ).IsAssignableFrom( currType ) || typeof( Collider ).IsAssignableFrom( currType ) ||
-							typeof( Collider2D ).IsAssignableFrom( currType )
-
-							// pzy:
-							// 类型 GUIText 已移除
-							//#pragma warning disable 0618
-							//							|| typeof( GUIText ).IsAssignableFrom( currType ) ) )
-							//#pragma warning restore 0618
-							))
-
-							continue;
-						else
-						{
-							VariableGetVal getter = properties[i].CreateGetter();
-							if( getter != null && !properties[i].IsOverridden() ) // No need to check properties with 'override' keyword
-								validVariables.Add( new VariableGetterHolder( properties[i], getter, properties[i].IsSerializable() ) );
-						}
-					}
-
-					currType = currType.BaseType;
-				}
-			}
-
-			result = validVariables.ToArray();
-
-			// Cache the filtered fields
-			typeToVariables.Add( type, result );
 
 			return result;
 		}
 
 		// Check if the asset at specified path depends on any of the references
 		private bool AssetHasAnyReference( string assetPath )
+		{
+			if( assetsToSearchPathsSet.Contains( assetPath ) )
+				return true;
+
+			if( alwaysSearchedExtensionsSet.Count > 0 && alwaysSearchedExtensionsSet.Contains( Utilities.GetFileExtension( assetPath ) ) )
+				return true;
+
+			return AssetHasAnyReferenceInternal( assetPath );
+		}
+
+		// Recursively check if the asset at specified path depends on any of the references
+		private bool AssetHasAnyReferenceInternal( string assetPath )
 		{
 			CacheEntry cacheEntry;
 			if( !assetDependencyCache.TryGetValue( assetPath, out cacheEntry ) )
@@ -1138,8 +932,70 @@ namespace AssetUsageDetectorNamespace
 			cacheEntry.searchResult = CacheEntry.Result.No;
 
 			string[] dependencies = cacheEntry.dependencies;
+			long[] fileSizes = cacheEntry.fileSizes;
 			for( int i = 0; i < dependencies.Length; i++ )
 			{
+				// If a dependency was renamed (which doesn't affect the verified hash, unfortunately),
+				// force refresh the asset's dependencies and search it again
+				if( !Directory.Exists( dependencies[i] ) ) // Calling FileInfo.Length on a directory throws FileNotFoundException
+				{
+					FileInfo assetFile = new FileInfo( dependencies[i] );
+					if( !assetFile.Exists || assetFile.Length != fileSizes[i] )
+					{
+						// Although not reproduced, it is reported that this section caused StackOverflowException due to infinite loop,
+						// if that happens, log useful information to help reproduce the issue
+						if( lastRefreshedCacheEntry == cacheEntry )
+						{
+							StringBuilder sb = new StringBuilder( 1000 );
+							sb.AppendLine( "<b>Infinite loop while refreshing a cache entry, please report it to the author.</b>" ).AppendLine();
+							sb.Append( "Asset path: " ).AppendLine( assetPath );
+
+							for( int j = 0; j < 2; j++ )
+							{
+								if( j == 1 )
+								{
+									cacheEntry.Refresh( assetPath );
+									dependencies = cacheEntry.dependencies;
+									fileSizes = cacheEntry.fileSizes;
+								}
+
+								sb.AppendLine().AppendLine( j == 0 ? "Old Dependencies:" : "New Dependencies" );
+								for( int k = 0; k < dependencies.Length; k++ )
+								{
+									sb.Append( "- " ).Append( dependencies[k] );
+
+									if( Directory.Exists( dependencies[k] ) )
+									{
+										sb.Append( " (Dir)" );
+										if( fileSizes[k] != 0L )
+											sb.Append( " WasCachedAsFile: " ).Append( fileSizes[k] );
+									}
+									else
+									{
+										assetFile = new FileInfo( dependencies[k] );
+										sb.Append( " (File) " ).Append( "CachedSize: " ).Append( fileSizes[k] );
+										if( assetFile.Exists )
+											sb.Append( " RealSize: " ).Append( assetFile.Length );
+										else
+											sb.Append( " NoLongerExists" );
+									}
+
+									sb.AppendLine();
+								}
+							}
+
+							Debug.LogError( sb.ToString() );
+							return false;
+						}
+
+						cacheEntry.Refresh( assetPath );
+						cacheEntry.searchResult = CacheEntry.Result.Unknown;
+						lastRefreshedCacheEntry = cacheEntry;
+
+						return AssetHasAnyReferenceInternal( assetPath );
+					}
+				}
+
 				if( assetsToSearchPathsSet.Contains( dependencies[i] ) )
 				{
 					cacheEntry.searchResult = CacheEntry.Result.Yes;
@@ -1149,7 +1005,7 @@ namespace AssetUsageDetectorNamespace
 
 			for( int i = 0; i < dependencies.Length; i++ )
 			{
-				if( AssetHasAnyReference( dependencies[i] ) )
+				if( AssetHasAnyReferenceInternal( dependencies[i] ) )
 				{
 					cacheEntry.searchResult = CacheEntry.Result.Yes;
 					return true;
@@ -1160,12 +1016,10 @@ namespace AssetUsageDetectorNamespace
 		}
 
 		// Get reference node for object
-		private ReferenceNode GetReferenceNode( object nodeObject, string hash = null )
+		private ReferenceNode GetReferenceNode( object nodeObject )
 		{
-			if( hash == null )
-				hash = nodeObject.Hash();
-
 			ReferenceNode result;
+			string hash = nodeObject.Hash();
 			if( !searchedObjects.TryGetValue( hash, out result ) || result == null )
 			{
 				result = PopReferenceNode( nodeObject );
@@ -1220,98 +1074,47 @@ namespace AssetUsageDetectorNamespace
 			}
 		}
 
-		public void SaveCache()
+		// Appends contents of callStack to StringBuilder and returns the most recent Unity object in callStack
+		private Object AppendCallStackToStringBuilder( StringBuilder sb )
 		{
-			if( assetDependencyCache == null )
-				return;
-
-			try
+			Object latestUnityObjectInCallStack = null;
+			if( callStack.Count > 0 )
 			{
-				using( FileStream stream = new FileStream( CachePath, FileMode.Create ) )
-				using( BinaryWriter writer = new BinaryWriter( stream ) )
+				sb.AppendLine().AppendLine( "Stack contents: " );
+
+				for( int i = callStack.Count - 1; i >= 0; i-- )
 				{
-					writer.Write( assetDependencyCache.Count );
-
-					foreach( var keyValuePair in assetDependencyCache )
+					latestUnityObjectInCallStack = callStack[i] as Object;
+					if( latestUnityObjectInCallStack )
 					{
-						CacheEntry cacheEntry = keyValuePair.Value;
-						string[] dependencies = cacheEntry.dependencies;
-
-						writer.Write( keyValuePair.Key );
-						writer.Write( cacheEntry.hash );
-						writer.Write( dependencies.Length );
-
-						for( int i = 0; i < dependencies.Length; i++ )
-							writer.Write( dependencies[i] );
-					}
-				}
-			}
-			catch( Exception e )
-			{
-				Debug.LogException( e );
-			}
-		}
-
-		private void LoadCache()
-		{
-			if( File.Exists( CachePath ) )
-			{
-				using( FileStream stream = new FileStream( CachePath, FileMode.Open, FileAccess.Read ) )
-				using( BinaryReader reader = new BinaryReader( stream ) )
-				{
-					try
-					{
-						int cacheSize = reader.ReadInt32();
-						assetDependencyCache = new Dictionary<string, CacheEntry>( cacheSize );
-
-						for( int i = 0; i < cacheSize; i++ )
+						if( !AssetDatabase.Contains( latestUnityObjectInCallStack ) )
 						{
-							string assetPath = reader.ReadString();
-							string hash = reader.ReadString();
-
-							int dependenciesLength = reader.ReadInt32();
-							string[] dependencies = new string[dependenciesLength];
-							for( int j = 0; j < dependenciesLength; j++ )
-								dependencies[j] = reader.ReadString();
-
-							assetDependencyCache[assetPath] = new CacheEntry( hash, dependencies );
+							string scenePath = AssetDatabase.GetAssetOrScenePath( latestUnityObjectInCallStack );
+							if( !string.IsNullOrEmpty( scenePath ) && SceneManager.GetSceneByPath( scenePath ).IsValid() )
+								sb.Append( "Scene: " ).AppendLine( scenePath );
 						}
-					}
-					catch( Exception e )
-					{
-						assetDependencyCache = null;
-						Debug.LogException( e );
+
+						break;
 					}
 				}
-			}
 
-			// Generate cache for all assets for the first time
-			if( assetDependencyCache == null )
-			{
-				assetDependencyCache = new Dictionary<string, CacheEntry>( 1024 * 8 );
-
-				string[] allAssets = AssetDatabase.GetAllAssetPaths();
-				if( allAssets.Length > 0 )
+				for( int i = callStack.Count - 1; i >= 0; i-- )
 				{
-					string title = "Please wait...";
-					string message = "Generating cache for the first time";
+					sb.Append( i ).Append( ": " );
 
-					double startTime = EditorApplication.timeSinceStartup;
-
-					EditorUtility.DisplayProgressBar( title, message, 0f );
-
-					for( int i = 0; i < allAssets.Length; i++ )
-					{
-						AssetHasAnyReference( allAssets[i] );
-						EditorUtility.DisplayProgressBar( title, message, (float) i / allAssets.Length );
-					}
-
-					EditorUtility.ClearProgressBar();
-
-					Debug.Log( "Cache generated in " + ( EditorApplication.timeSinceStartup - startTime ).ToString( "F2" ) + " seconds" );
-					SaveCache();
+					Object unityObject = callStack[i] as Object;
+					if( unityObject )
+						sb.Append( unityObject.name ).Append( " (" ).Append( unityObject.GetType() ).AppendLine( ")" );
+					else if( callStack[i] != null )
+						sb.Append( callStack[i].GetType() ).AppendLine( " object" );
+					else
+						sb.AppendLine( "<<destroyed>>" );
 				}
+
+				sb.AppendLine();
 			}
+
+			return latestUnityObjectInCallStack;
 		}
 	}
 }

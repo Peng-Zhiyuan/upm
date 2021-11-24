@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace AssetUsageDetectorNamespace.Extras
+namespace AssetUsageDetectorNamespace
 {
 	public class EmptyEnumerator<T> : IEnumerable<T>, IEnumerator<T>
 	{
@@ -111,6 +111,20 @@ namespace AssetUsageDetectorNamespace.Extras
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
+		}
+
+		public Object[] ToArray()
+		{
+			int count = 0;
+			foreach( Object obj in this )
+				count++;
+
+			Object[] result = new Object[count];
+			int index = 0;
+			foreach( Object obj in this )
+				result[index++] = obj;
+
+			return result;
 		}
 	}
 }

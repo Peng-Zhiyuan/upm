@@ -4,10 +4,10 @@ using System.Collections;
 using System.IO;
 using CustomLitJson;
 using System.Text;
-using Ionic.Zlib;
+using EtuUnity.Ionic.Zlib;
 using UnityEngine;
 
-namespace etucli
+namespace EtuUnity
 {
     class Program
     {

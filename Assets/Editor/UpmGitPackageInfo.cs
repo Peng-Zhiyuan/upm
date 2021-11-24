@@ -56,7 +56,7 @@ public class UpmGitPackageInfo
         {
             var packageDiPath = this.nativePackageInfo.assetPath;
             var packageJsonPath = $"{packageDiPath}/package.json";
-            Debug.Log(packageJsonPath);
+            //Debug.Log(packageJsonPath);
             var asset = AssetDatabase.LoadAssetAtPath(packageJsonPath, typeof(TextAsset)) as TextAsset;
             return asset;
         }

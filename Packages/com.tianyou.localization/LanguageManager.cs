@@ -40,7 +40,7 @@ public static class LanguageManager
             if (_languageList == null)
             {
                 _languageList = new List<string>();
-                var str = LuncherManifestManager.Get("language.list");
+                var str = GameManifestManager.Get("language.list");
                 Debug.Log("language.list: " + str);
                 var parts = str.Split(',');
                 foreach (var entrace in parts)

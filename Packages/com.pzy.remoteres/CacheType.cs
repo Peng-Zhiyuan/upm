@@ -1,6 +1,6 @@
 public enum CacheType
 {
     None,
-    Memory,
+    Memory, 
     File,
 }

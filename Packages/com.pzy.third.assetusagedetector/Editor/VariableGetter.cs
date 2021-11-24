@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Reflection;
+using UnityEngine;
 
-namespace AssetUsageDetectorNamespace.Extras
+namespace AssetUsageDetectorNamespace
 {
 	// Delegate to get the value of a variable (either field or property)
 	public delegate object VariableGetVal( object obj );
@@ -32,7 +33,15 @@ namespace AssetUsageDetectorNamespace.Extras
 
 		public object Get( object obj )
 		{
-			return getter( obj );
+			try
+			{
+				return getter( obj );
+			}
+			catch( Exception e )
+			{
+				Debug.LogException( e );
+				return null;
+			}
 		}
 	}
 
@@ -60,8 +69,7 @@ namespace AssetUsageDetectorNamespace.Extras
 			}
 			catch
 			{
-				// Property getters may return various kinds of exceptions
-				// if their backing fields are not initialized (yet)
+				// Property getters may return various kinds of exceptions if their backing fields are not initialized (yet)
 				return null;
 			}
 		}

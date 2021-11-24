@@ -25,7 +25,7 @@ public static class AndroidBuild
 
 		AssetDatabase.Refresh();
 
-		string solutionPath = "NativeBuilderProduct/eclipse_project";
+		string solutionPath = "NativeBuilderProduct/android_project";
 
 		//check parent dir
 		{
@@ -43,7 +43,7 @@ public static class AndroidBuild
 
 
 		// build eclipse project
-		UnityEngine.Debug.Log("Unity building eclipse project..."); 
+		UnityEngine.Debug.Log("Unity building android project..."); 
 		if(developmen){
 			NativeBuilderUtility.Build(solutionPath, UnityEditor.BuildTarget.Android, UnityEditor.BuildOptions.Development);
 		}
@@ -52,11 +52,11 @@ public static class AndroidBuild
 		}
 				
 		// rename main android module to Game
-		string oldGameName = PlayerSettings.productName;
-		string newGamename = "Game";
-		string source = Path.Combine(solutionPath, oldGameName);
-		string dest = Path.Combine(solutionPath, newGamename);
-		Directory.Move(source, dest);
+		//string oldGameName = PlayerSettings.productName;
+		//string newGamename = "Game";
+		//string source = Path.Combine(solutionPath, oldGameName);
+		//string dest = Path.Combine(solutionPath, newGamename);
+		//Directory.Move(source, dest);
 
 		// rename obb
 		string ObbPath = solutionPath+"/"+PlayerSettings.productName+".main.obb";
@@ -67,7 +67,7 @@ public static class AndroidBuild
 		}
 
 		// add android append file
-		AddAndroidAppendFile(solutionPath + "/Game");
+		AddAndroidAppendFile(solutionPath);
 
 		// pre build
 		NativeBuilderPluginManager.NotifyPostBuild();
@@ -78,7 +78,7 @@ public static class AndroidBuild
 		DateTime endTime = DateTime.Now;
 		var useTime = endTime - startTime;
 		string msg = "[NativeBuilder] Build Success";
-		msg += ", android project release at [" + "NativeBuilderProduct/eclipse_project/Game]";
+		msg += ", android project release at [" + "NativeBuilderProduct/android_project]";
 		msg += ", in "  + FormatTime(useTime);
 		Debug.Log(msg);
 	}

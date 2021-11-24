@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public static class ClientConfigEditorCommand 
+
+public static class ClientConfigEditorCommand
 {
     [MenuItem("ClientConfig/Generate")]
     static void Generate()
     {
-        etucli.Program.Main(new string[] { });
+        EtuUnity.Program.Main(new string[] { });
     }
 
 

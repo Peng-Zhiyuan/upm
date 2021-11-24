@@ -1,43 +1,70 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
+#if UNITY_2018_1_OR_NEWER
+using Unity.Collections;
+#endif
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
+#if UNITY_2018_3_OR_NEWER
+using PrefabStage = UnityEditor.Experimental.SceneManagement.PrefabStage;
+using PrefabStageUtility = UnityEditor.Experimental.SceneManagement.PrefabStageUtility;
+#endif
 
-namespace AssetUsageDetectorNamespace.Extras
+namespace AssetUsageDetectorNamespace
 {
 	public static class Utilities
 	{
 		// A set of commonly used Unity types
-		private static readonly HashSet<Type> primitiveUnityTypes = new HashSet<Type>() {
-				typeof( string ), typeof( Vector4 ), typeof( Vector3 ), typeof( Vector2 ), typeof( Rect ),
-				typeof( Quaternion ), typeof( Color ), typeof( Color32 ), typeof( LayerMask ),
-				typeof( Matrix4x4 ), typeof( AnimationCurve ), typeof( Gradient ), typeof( RectOffset ),
-				typeof( Assembly ), // Searching assembly variables for reference throws InvalidCastException on .NET 4.0 runtime
-				typeof( bool[] ), typeof( byte[] ), typeof( sbyte[] ), typeof( char[] ), typeof( decimal[] ),
-				typeof( double[] ), typeof( float[] ), typeof( int[] ), typeof( uint[] ), typeof( long[] ),
-				typeof( ulong[] ), typeof( short[] ), typeof( ushort[] ), typeof( string[] ),
-				typeof( Vector4[] ), typeof( Vector3[] ), typeof( Vector2[] ), typeof( Rect[] ),
-				typeof( Quaternion[] ), typeof( Color[] ), typeof( Color32[] ), typeof( LayerMask[] ),
-				typeof( Matrix4x4[] ), typeof( AnimationCurve[] ), typeof( Gradient[] ), typeof( RectOffset[] ), typeof( Assembly[] ),
-				typeof( List<bool> ), typeof( List<byte> ), typeof( List<sbyte> ), typeof( List<char> ), typeof( List<decimal> ),
-				typeof( List<double> ), typeof( List<float> ), typeof( List<int> ), typeof( List<uint> ), typeof( List<long> ),
-				typeof( List<ulong> ), typeof( List<short> ), typeof( List<ushort> ), typeof( List<string> ),
-				typeof( List<Vector4> ), typeof( List<Vector3> ), typeof( List<Vector2> ), typeof( List<Rect> ),
-				typeof( List<Quaternion> ), typeof( List<Color> ), typeof( List<Color32> ), typeof( List<LayerMask> ),
-				typeof( List<Matrix4x4> ), typeof( List<AnimationCurve> ), typeof( List<Gradient> ), typeof( List<RectOffset> ), typeof( List<Assembly> )
+		private static readonly HashSet<Type> primitiveUnityTypes = new HashSet<Type>()
+		{
+			typeof( string ), typeof( Vector4 ), typeof( Vector3 ), typeof( Vector2 ), typeof( Rect ),
+			typeof( Quaternion ), typeof( Color ), typeof( Color32 ), typeof( LayerMask ), typeof( Bounds ),
+			typeof( Matrix4x4 ), typeof( AnimationCurve ), typeof( Gradient ), typeof( RectOffset ),
+			typeof( bool[] ), typeof( byte[] ), typeof( sbyte[] ), typeof( char[] ), typeof( decimal[] ),
+			typeof( double[] ), typeof( float[] ), typeof( int[] ), typeof( uint[] ), typeof( long[] ),
+			typeof( ulong[] ), typeof( short[] ), typeof( ushort[] ), typeof( string[] ),
+			typeof( Vector4[] ), typeof( Vector3[] ), typeof( Vector2[] ), typeof( Rect[] ),
+			typeof( Quaternion[] ), typeof( Color[] ), typeof( Color32[] ), typeof( LayerMask[] ), typeof( Bounds[] ),
+			typeof( Matrix4x4[] ), typeof( AnimationCurve[] ), typeof( Gradient[] ), typeof( RectOffset[] ),
+			typeof( List<bool> ), typeof( List<byte> ), typeof( List<sbyte> ), typeof( List<char> ), typeof( List<decimal> ),
+			typeof( List<double> ), typeof( List<float> ), typeof( List<int> ), typeof( List<uint> ), typeof( List<long> ),
+			typeof( List<ulong> ), typeof( List<short> ), typeof( List<ushort> ), typeof( List<string> ),
+			typeof( List<Vector4> ), typeof( List<Vector3> ), typeof( List<Vector2> ), typeof( List<Rect> ),
+			typeof( List<Quaternion> ), typeof( List<Color> ), typeof( List<Color32> ), typeof( List<LayerMask> ), typeof( List<Bounds> ),
+			typeof( List<Matrix4x4> ), typeof( List<AnimationCurve> ), typeof( List<Gradient> ), typeof( List<RectOffset> ),
+#if UNITY_2017_2_OR_NEWER
+			typeof( Vector3Int ), typeof( Vector2Int ), typeof( RectInt ), typeof( BoundsInt ),
+			typeof( Vector3Int[] ), typeof( Vector2Int[] ), typeof( RectInt[] ), typeof( BoundsInt[] ),
+			typeof( List<Vector3Int> ), typeof( List<Vector2Int> ), typeof( List<RectInt> ), typeof( List<BoundsInt> )
+#endif
 		};
 
+		private static readonly string reflectionNamespace = typeof( Assembly ).Namespace;
+#if UNITY_2018_1_OR_NEWER
+		private static readonly string nativeCollectionsNamespace = typeof( NativeArray<int> ).Namespace;
+#endif
+
 		private static readonly HashSet<string> folderContentsSet = new HashSet<string>();
+
+		private static readonly StringBuilder stringBuilder = new StringBuilder( 10 );
+
+#if UNITY_2018_3_OR_NEWER
+		private static int previousPingedPrefabInstanceId;
+		private static double previousPingedPrefabPingTime;
+#endif
 
 		public static readonly GUILayoutOption GL_EXPAND_WIDTH = GUILayout.ExpandWidth( true );
 		public static readonly GUILayoutOption GL_EXPAND_HEIGHT = GUILayout.ExpandHeight( true );
 		public static readonly GUILayoutOption GL_WIDTH_25 = GUILayout.Width( 25 );
 		public static readonly GUILayoutOption GL_WIDTH_100 = GUILayout.Width( 100 );
 		public static readonly GUILayoutOption GL_WIDTH_250 = GUILayout.Width( 250 );
+		public static readonly GUILayoutOption GL_HEIGHT_0 = GUILayout.Height( 0 );
+		public static readonly GUILayoutOption GL_HEIGHT_2 = GUILayout.Height( 2 );
 		public static readonly GUILayoutOption GL_HEIGHT_30 = GUILayout.Height( 30 );
 		public static readonly GUILayoutOption GL_HEIGHT_35 = GUILayout.Height( 35 );
 		public static readonly GUILayoutOption GL_HEIGHT_40 = GUILayout.Height( 40 );
@@ -54,6 +81,14 @@ namespace AssetUsageDetectorNamespace.Extras
 						alignment = TextAnchor.MiddleCenter,
 						font = EditorStyles.label.font
 					};
+
+					Color textColor = GUI.skin.button.normal.textColor;
+					m_boxGUIStyle.normal.textColor = textColor;
+					m_boxGUIStyle.hover.textColor = textColor;
+					m_boxGUIStyle.focused.textColor = textColor;
+					m_boxGUIStyle.active.textColor = textColor;
+
+					m_boxGUIStyle.fontSize = ( m_boxGUIStyle.fontSize + GUI.skin.button.fontSize ) / 2;
 				}
 
 				return m_boxGUIStyle;
@@ -80,12 +115,13 @@ namespace AssetUsageDetectorNamespace.Extras
 					normalState = m_tooltipGUIStyle.normal;
 
 					normalState.background = null;
+					normalState.scaledBackgrounds = new Texture2D[0];
 					normalState.textColor = Color.black;
 				}
 
 				if( normalState.background == null || normalState.background.Equals( null ) )
 				{
-					Texture2D backgroundTexture = new Texture2D( 1, 1 );
+					Texture2D backgroundTexture = new Texture2D( 1, 1 ) { hideFlags = HideFlags.HideAndDontSave };
 					backgroundTexture.SetPixel( 0, 0, new Color( 0.88f, 0.88f, 0.88f, 0.85f ) );
 					backgroundTexture.Apply();
 
@@ -143,9 +179,9 @@ namespace AssetUsageDetectorNamespace.Extras
 
 			Event e = Event.current;
 
-			// If CTRL key is pressed, do a multi-select;
+			// If CTRL or Shift keys are pressed, do a multi-select;
 			// otherwise select only the clicked object and ping it in editor
-			if( !e.control )
+			if( !e.control && !e.shift )
 				Selection.activeObject = obj.PingInEditor();
 			else
 			{
@@ -211,24 +247,35 @@ namespace AssetUsageDetectorNamespace.Extras
 				if( prefabAssetType == PrefabAssetType.Regular || prefabAssetType == PrefabAssetType.Variant )
 				{
 					string assetPath = AssetDatabase.GetAssetPath( objTR.gameObject );
-					var openPrefabStage = UnityEditor.Experimental.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage();
-					if( openPrefabStage != null && openPrefabStage.stageHandle.IsValid() && assetPath == openPrefabStage.prefabAssetPath )
+					PrefabStage openPrefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+
+					// Try to open the prefab stage of pinged prefabs if they are double clicked
+					if( previousPingedPrefabInstanceId == objTR.GetInstanceID() && EditorApplication.timeSinceStartup - previousPingedPrefabPingTime <= 0.3f &&
+#if UNITY_2020_1_OR_NEWER
+						( openPrefabStage == null || !openPrefabStage.stageHandle.IsValid() || assetPath != openPrefabStage.assetPath ) )
+#else
+						( openPrefabStage == null || !openPrefabStage.stageHandle.IsValid() || assetPath != openPrefabStage.prefabAssetPath ) )
+#endif
 					{
-						// Ping the object in prefab stage
-						Transform targetParent = objTR;
-						Transform selectedObject = ( (GameObject) obj ).transform;
-						objTR = openPrefabStage.prefabContentsRoot.transform;
-						while( targetParent != selectedObject )
+						AssetDatabase.OpenAsset( objTR.gameObject );
+						openPrefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+					}
+
+					previousPingedPrefabInstanceId = objTR.GetInstanceID();
+					previousPingedPrefabPingTime = EditorApplication.timeSinceStartup;
+
+#if UNITY_2020_1_OR_NEWER
+					if( openPrefabStage != null && openPrefabStage.stageHandle.IsValid() && assetPath == openPrefabStage.assetPath )
+#else
+					if( openPrefabStage != null && openPrefabStage.stageHandle.IsValid() && assetPath == openPrefabStage.prefabAssetPath )
+#endif
+					{
+						GameObject prefabStageGO = FollowSymmetricHierarchy( (GameObject) obj, ( (GameObject) obj ).transform.root.gameObject, openPrefabStage.prefabContentsRoot );
+						if( prefabStageGO != null )
 						{
-							Transform temp = selectedObject;
-							while( temp.parent != targetParent )
-								temp = temp.parent;
-
-							objTR = objTR.GetChild( temp.GetSiblingIndex() );
-							targetParent = temp;
+							objTR = prefabStageGO.transform;
+							selection = objTR.gameObject;
 						}
-
-						selection = objTR.gameObject;
 					}
 #if UNITY_2019_1_OR_NEWER
 					else if( obj != objTR.gameObject )
@@ -254,12 +301,54 @@ namespace AssetUsageDetectorNamespace.Extras
 			return selection;
 		}
 
+		// We are passing "go"s root Transform to thisRoot parameter. If we use go.transform.root instead, when we are in prefab mode on
+		// newer Unity versions, it points to the preview scene at the root of the prefab stage instead of pointing to the actual root of "go"
+		public static GameObject FollowSymmetricHierarchy( this GameObject go, GameObject thisRoot, GameObject symmetricRoot )
+		{
+			Transform target = go.transform;
+			Transform root1 = thisRoot.transform;
+			Transform root2 = symmetricRoot.transform;
+			while( root1 != target )
+			{
+				Transform temp = target;
+				while( temp.parent != root1 )
+					temp = temp.parent;
+
+				Transform newRoot2;
+				int siblingIndex = temp.GetSiblingIndex();
+				if( siblingIndex < root2.childCount )
+				{
+					newRoot2 = root2.GetChild( siblingIndex );
+					if( newRoot2.name != temp.name )
+						newRoot2 = root2.Find( temp.name );
+				}
+				else
+					newRoot2 = root2.Find( temp.name );
+
+				if( newRoot2 == null )
+					return null;
+
+				root2 = newRoot2;
+				root1 = temp;
+			}
+
+			return root2.gameObject;
+		}
+
 		// Check if the field is serializable
 		public static bool IsSerializable( this FieldInfo fieldInfo )
 		{
-			// see Serialization Rules: https://docs.unity3d.com/Manual/script-Serialization.html
-			if( fieldInfo.IsInitOnly || ( ( !fieldInfo.IsPublic || fieldInfo.IsNotSerialized ) &&
-			   !Attribute.IsDefined( fieldInfo, typeof( SerializeField ) ) ) )
+			// See Serialization Rules: https://docs.unity3d.com/Manual/script-Serialization.html
+			if( fieldInfo.IsInitOnly )
+				return false;
+
+#if UNITY_2019_3_OR_NEWER
+			// SerializeReference makes even System.Object fields serializable
+			if( Attribute.IsDefined( fieldInfo, typeof( SerializeReference ) ) )
+				return true;
+#endif
+
+			if( ( !fieldInfo.IsPublic || fieldInfo.IsNotSerialized ) && !Attribute.IsDefined( fieldInfo, typeof( SerializeField ) ) )
 				return false;
 
 			return IsTypeSerializable( fieldInfo.FieldType );
@@ -290,6 +379,16 @@ namespace AssetUsageDetectorNamespace.Extras
 			}
 			else if( type.IsGenericType )
 			{
+				// Generic types are allowed on 2020.1 and later
+#if UNITY_2020_1_OR_NEWER
+				if( type.GetGenericTypeDefinition() == typeof( List<> ) )
+				{
+					type = type.GetGenericArguments()[0];
+
+					if( typeof( Object ).IsAssignableFrom( type ) )
+						return true;
+				}
+#else
 				if( type.GetGenericTypeDefinition() != typeof( List<> ) )
 					return false;
 
@@ -297,25 +396,38 @@ namespace AssetUsageDetectorNamespace.Extras
 
 				if( typeof( Object ).IsAssignableFrom( type ) )
 					return true;
+#endif
 			}
 
+#if !UNITY_2020_1_OR_NEWER
 			if( type.IsGenericType )
 				return false;
+#endif
 
 			return Attribute.IsDefined( type, typeof( SerializableAttribute ), false );
 		}
 
-		// Check if the type is a common Unity type (let's call them primitives)
-		public static bool IsPrimitiveUnityType( this Type type )
+		// Check if instances of this type should be searched for references
+		public static bool IsIgnoredUnityType( this Type type )
 		{
-			return type.IsPrimitive || primitiveUnityTypes.Contains( type ) || type.IsEnum;
-		}
+			if( type.IsPrimitive || primitiveUnityTypes.Contains( type ) || type.IsEnum )
+				return true;
 
-		// Check if property has override keyword
-		public static bool IsOverridden( this PropertyInfo propertyInfo )
-		{
-			MethodInfo mi = propertyInfo.GetGetMethod( true );
-			return mi.GetBaseDefinition().DeclaringType != mi.DeclaringType;
+#if UNITY_2018_1_OR_NEWER
+			// Searching NativeArrays for reference can throw InvalidOperationException if the collection is disposed
+			if( type.Namespace == nativeCollectionsNamespace )
+				return true;
+#endif
+
+			// Searching assembly variables for reference throws InvalidCastException on .NET 4.0 runtime
+			if( typeof( Type ).IsAssignableFrom( type ) || type.Namespace == reflectionNamespace )
+				return true;
+
+			// Searching pointers or ref variables for reference throws ArgumentException
+			if( type.IsPointer || type.IsByRef )
+				return true;
+
+			return false;
 		}
 
 		// Get <get> function for a field
@@ -340,22 +452,25 @@ namespace AssetUsageDetectorNamespace.Extras
 		// Get <get> function for a property
 		public static VariableGetVal CreateGetter( this PropertyInfo propertyInfo )
 		{
-			// Ignore indexer properties
-			if( propertyInfo.GetIndexParameters().Length > 0 )
-				return null;
-
 			// Can't use PropertyWrapper (which uses CreateDelegate) for property getters of structs
 			if( propertyInfo.DeclaringType.IsValueType )
-				return propertyInfo.CanRead ? ( ( obj ) => propertyInfo.GetValue( obj, null ) ) : (VariableGetVal) null;
-
-			MethodInfo mi = propertyInfo.GetGetMethod( true );
-			if( mi != null )
 			{
-				Type GenType = typeof( PropertyWrapper<,> ).MakeGenericType( propertyInfo.DeclaringType, propertyInfo.PropertyType );
-				return ( (IPropertyAccessor) Activator.CreateInstance( GenType, mi ) ).GetValue;
+				return !propertyInfo.CanRead ? (VariableGetVal) null : ( obj ) =>
+				{
+					try
+					{
+						return propertyInfo.GetValue( obj, null );
+					}
+					catch
+					{
+						// Property getters may return various kinds of exceptions if their backing fields are not initialized (yet)
+						return null;
+					}
+				};
 			}
 
-			return null;
+			Type GenType = typeof( PropertyWrapper<,> ).MakeGenericType( propertyInfo.DeclaringType, propertyInfo.PropertyType );
+			return ( (IPropertyAccessor) Activator.CreateInstance( GenType, propertyInfo.GetGetMethod( true ) ) ).GetValue;
 		}
 
 		// Check if all open scenes are saved (not dirty)
@@ -369,6 +484,34 @@ namespace AssetUsageDetectorNamespace.Extras
 			}
 
 			return true;
+		}
+
+		// Returns file extension in lowercase (period not included)
+		public static string GetFileExtension( string path )
+		{
+			int extensionIndex = path.LastIndexOf( '.' );
+			if( extensionIndex < 0 || extensionIndex >= path.Length - 1 )
+				return "";
+
+			stringBuilder.Length = 0;
+			for( extensionIndex++; extensionIndex < path.Length; extensionIndex++ )
+			{
+				char ch = path[extensionIndex];
+				if( ch >= 65 && ch <= 90 ) // A-Z
+					ch += (char) 32; // Converted to a-z
+
+				stringBuilder.Append( ch );
+			}
+
+			return stringBuilder.ToString();
+		}
+
+		// Draw horizontal line inside OnGUI
+		public static void DrawSeparatorLine()
+		{
+			GUILayout.Space( 4 );
+			GUILayout.Box( "", GL_HEIGHT_2, GL_EXPAND_WIDTH );
+			GUILayout.Space( 4 );
 		}
 
 		// Check if all the objects inside the list are null
@@ -417,6 +560,65 @@ namespace AssetUsageDetectorNamespace.Extras
 			}
 
 			return true;
+		}
+
+		// Returns true is str starts with prefix
+		public static bool StartsWithFast( this string str, string prefix )
+		{
+			int aLen = str.Length;
+			int bLen = prefix.Length;
+			int ap = 0; int bp = 0;
+			while( ap < aLen && bp < bLen && str[ap] == prefix[bp] )
+			{
+				ap++;
+				bp++;
+			}
+
+			return bp == bLen;
+		}
+
+		// Returns true is str ends with postfix
+		public static bool EndsWithFast( this string str, string postfix )
+		{
+			int ap = str.Length - 1;
+			int bp = postfix.Length - 1;
+			while( ap >= 0 && bp >= 0 && str[ap] == postfix[bp] )
+			{
+				ap--;
+				bp--;
+			}
+
+			return bp < 0;
+		}
+
+		public static bool ContainsFast<T>( this List<T> list, T element )
+		{
+			if( !( element is ValueType ) )
+			{
+				for( int i = list.Count - 1; i >= 0; i-- )
+				{
+					if( ReferenceEquals( list[i], element ) )
+						return true;
+				}
+			}
+			else
+			{
+				for( int i = list.Count - 1; i >= 0; i-- )
+				{
+					if( element.Equals( list[i] ) )
+						return true;
+				}
+			}
+
+			return false;
+		}
+
+		public static void RemoveAtFast<T>( this List<T> list, int index )
+		{
+			int lastElementIndex = list.Count - 1;
+
+			list[index] = list[lastElementIndex];
+			list.RemoveAt( lastElementIndex );
 		}
 	}
 }

@@ -42,6 +42,11 @@ public static class UIEngineExtension
         return (T)page;
     }
 
+    public static async void RemoveFromStack<T>(this UIEngine uiengine) where T : Page
+    {
+        await RemoveFromStackAsync<T>(uiengine);
+    }
+
     public static async Task RemoveFromStackAsync<T>(this UIEngine uiengine) where T : Page
     {
         var name = typeof (T).Name;
