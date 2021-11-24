@@ -54,6 +54,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.dashboard": {
+      "version": "file:com.pzy.dashboard",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.datemanager": {
       "version": "file:com.pzy.datemanager",
       "depth": 0,
@@ -90,8 +96,26 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.gamemanifest": {
+      "version": "file:com.pzy.lunchermanifest",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.gameobjectpool": {
       "version": "file:com.pzy.gameobjectpool",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.hierarchy": {
+      "version": "file:com.pzy.hierarchy",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.lockstepkit": {
+      "version": "file:com.pzy.lockstepkit",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
@@ -102,8 +126,8 @@
       "source": "embedded",
       "dependencies": {}
     },
-    "com.pzy.lunchermanifest": {
-      "version": "file:com.pzy.lunchermanifest",
+    "com.pzy.luacodelinker": {
+      "version": "file:com.pzy.luacodelinker",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
@@ -126,6 +150,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.projectbuildpipline": {
+      "version": "file:com.pzy.projectbuildpipline",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.projectsetter": {
       "version": "file:com.pzy.projectsetter",
       "depth": 0,
@@ -144,6 +174,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.servicesystem": {
+      "version": "file:com.pzy.servicemanager",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.stuffobject": {
       "version": "file:com.pzy.stuffobject",
       "depth": 0,
@@ -151,7 +187,7 @@
       "dependencies": {}
     },
     "com.pzy.third.assetusagedetector": {
-      "version": "file:com.pzy.thrid.assetusagedetector",
+      "version": "file:com.pzy.third.assetusagedetector",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
@@ -196,6 +232,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.xluaext": {
+      "version": "file:com.pzy.xluaext",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.tianyou.console": {
       "version": "file:com.tianyou.console",
       "depth": 0,
@@ -204,6 +246,12 @@
     },
     "com.tianyou.localization": {
       "version": "file:com.tianyou.localization",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.tianyou.logger": {
+      "version": "file:com.tianyou.logger",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
