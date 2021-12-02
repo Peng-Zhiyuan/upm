@@ -97,7 +97,7 @@
       "dependencies": {}
     },
     "com.pzy.gamemanifest": {
-      "version": "file:com.pzy.lunchermanifest",
+      "version": "file:com.pzy.gamemanifest",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
