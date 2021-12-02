@@ -1,9 +1,1 @@
-{
-  "name": "com.pzy.datemanager",
-  "version": "1.0.0",
-  "displayName": "Date Manager",
-  "author": {
-    "name": "pzy",
-    "email": "460424301@qq.com"
-  }
-}
+{"name":"com.pzy.datemanager","version":"1.0.1","displayName":"Date Manager","author":{"name":"pzy","email":"460424301@qq.com"}}

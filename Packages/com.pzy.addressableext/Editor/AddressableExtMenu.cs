@@ -41,7 +41,7 @@ public static class AddressableExtMenu
     [MenuItem("AddressableExt/Auto Reset Assets")]
     static void RefreshAddressableBtn()
     {
-        var yesOrNo = EditorUtility.DisplayDialog("È·¶¨ÒªË¢ÐÂ Addressable Asset Âð£¿", "Õâ¿ÉÄÜ»áÈÃÄã¿¨ÉÏÒ»Õó×Ó", "ÊÇ", "·ñ");
+        var yesOrNo = EditorUtility.DisplayDialog("È·ï¿½ï¿½ÒªË¢ï¿½ï¿½ Addressable Asset ï¿½ï¿½", "ï¿½ï¿½ï¿½ï¿½Ü»ï¿½ï¿½ï¿½ï¿½ã¿¨ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½", "ï¿½ï¿½", "ï¿½ï¿½");
         if (!yesOrNo)
         {
             return;
@@ -67,7 +67,7 @@ public static class AddressableExtMenu
     [MenuItem("AddressableExt/Remove All Addressables Info")]
     static void RemoveAllAddressableInfoMenu()
     {
-        var b = EditorUtility.DisplayDialog("È·¶¨ÒªÇå³ýËùÓÐ Addressable ÐÅÏ¢Âð£¿", "Äã×îºÃÖªµÀ×Ô¼ºÔÚ¸ÉÊ²Ã´", "ÊÇ", "·ñ");
+        var b = EditorUtility.DisplayDialog("È·ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Addressable ï¿½ï¿½Ï¢ï¿½ï¿½", "ï¿½ï¿½ï¿½ï¿½ï¿½Öªï¿½ï¿½ï¿½Ô¼ï¿½ï¿½Ú¸ï¿½Ê²Ã´", "ï¿½ï¿½", "ï¿½ï¿½");
         if (!b)
         {
             return;
@@ -80,7 +80,7 @@ public static class AddressableExtMenu
     [MenuItem("AddressableExt/Build New Bundles")]
     static void BuildBundleWithResetGroup()
     {
-        var yesOrNo = EditorUtility.DisplayDialog("È·¶¨ÒªÖØÐÂ´ò°üÂð£¿", "Õâ¿ÉÄÜ»áÈÃÄã¿¨ÉÏÒ»Õó×Ó£¬¶øÇÒÄã±ØÐëÔÚ´ËÖ®ºóÇå³ý»º´æ", "ÊÇ", "·ñ");
+        var yesOrNo = EditorUtility.DisplayDialog("È·ï¿½ï¿½Òªï¿½ï¿½ï¿½Â´ï¿½ï¿½ï¿½ï¿½", "ï¿½ï¿½ï¿½ï¿½Ü»ï¿½ï¿½ï¿½ï¿½ã¿¨ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ó£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½Ö®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½", "ï¿½ï¿½", "ï¿½ï¿½");
         if (!yesOrNo)
         {
             return;

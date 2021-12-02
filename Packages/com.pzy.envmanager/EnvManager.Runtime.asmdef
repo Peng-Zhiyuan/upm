@@ -2,7 +2,7 @@
     "name": "EnvManager.Runtime",
     "references": [
         "GUID:9b5fdad621648440e94e6f08ce1946d8",
-        "GUID:3d67ee8b158244d0197ae46d5a427bee"
+        "GUID:be0ea76d8806af64b99437bb7be10afd"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

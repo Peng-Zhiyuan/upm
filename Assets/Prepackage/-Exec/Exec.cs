@@ -30,6 +30,7 @@ public class Exec
 			UnityEngine.Debug.Log("execute:  " + exec + " " + argument);
 		}
 
+		p.StartInfo.CreateNoWindow = true;
 		p.StartInfo.UseShellExecute = false;
 		p.StartInfo.RedirectStandardError = true;
 		p.StartInfo.RedirectStandardInput = true;

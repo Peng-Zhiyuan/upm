@@ -32,7 +32,28 @@ public static class UpmGitUtil
         return retList;
     }
 
-    static Task AwateRequest(Request request)
+    public async static Task<PackageInfo> GetEmbededPackageInfo(string packageName)
+    {
+        var request = Client.List();
+        await AwateRequest(request);
+        var list = request.Result;
+        var retList = new List<PackageInfo>();
+        foreach (var one in list)
+        {
+            var name = one.name;
+            var type = one.source;
+            if (type == PackageSource.Embedded)
+            {
+                if(name == packageName)
+                {
+                    return one;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static Task AwateRequest(Request request)
     {
         var tcs = new TaskCompletionSource<bool>();
         var w = new Waiter(request, () =>

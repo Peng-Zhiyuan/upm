@@ -12,6 +12,7 @@ public class UpmGitManagerWindow : EditorWindow
         window.Show(true);
     }
 
+    Vector2 scrollPosition = Vector2.zero;
     public void OnGUI()
     {
         var b = GUILayout.Button("Update Database");
@@ -32,6 +33,8 @@ public class UpmGitManagerWindow : EditorWindow
      
         if(status == UpmGitDatabaseStatus.AllRight)
         {
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+
             var packageInfoList = UpmGitDatabase.packageInfoList;
             foreach (var info in packageInfoList)
             {
@@ -46,6 +49,15 @@ public class UpmGitManagerWindow : EditorWindow
 
                 // 显示标签
                 EditorGUILayout.LabelField($"{name} {version}");
+
+                // add version
+                if(GUILayout.Button("Increase Version"))
+                {
+                    info.IncreaseVersionInBackground(()=>
+                    {
+                        this.Repaint();
+                    });
+                }
 
                 // package 文件引用
                 var packageAsset = info.PackageAsset;
@@ -88,6 +100,8 @@ public class UpmGitManagerWindow : EditorWindow
 
                
             }
+
+            EditorGUILayout.EndScrollView();
         }
     }
 }
