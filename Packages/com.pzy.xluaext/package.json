@@ -1,11 +1,1 @@
-{
-  "name": "com.pzy.xluaext",
-  "version": "1.0.0",
-  "displayName": "XLua Ext",
-  "author": {
-    "name": "pzy",
-    "email": "460424301@qq.com"
-  },
-  "description": "",
-  "dependencies": {}
-}
+{"name":"com.pzy.xluaext","version":"1.0.1","displayName":"XLua Ext","author":{"name":"pzy","email":"460424301@qq.com"},"description":"","dependencies":{}}

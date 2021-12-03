@@ -4,6 +4,8 @@ using UnityEngine;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
+using UnityEngine.Scripting;
+
 
 public static class TaskUtil
 {
@@ -12,6 +14,7 @@ public static class TaskUtil
     /// </summary>
     /// <param name="task"></param>
     /// <param name="action"></param>
+    [Preserve]
     public static async void Await(Task task, Action<object> action)
     {
         await task;

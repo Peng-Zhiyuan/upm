@@ -11,13 +11,13 @@ namespace NativeBuilder
 	public class NativeBuilderMenu 
 	{
 
-        [MenuItem("NativeBuilderLight/Build")]
+        [MenuItem("pzy.com.*/NativeBuilderLight/Build")]
 		public static void Build()
 		{
 			NativeBuilderGUI.Show();
 		}
 
-        [MenuItem("NativeBuilderLight/Open Product")]
+        [MenuItem("pzy.com.*/NativeBuilderLight/Open Product")]
 		public static void OpenAndroidProduct()
 		{
 			var path = "NativeBuilderProduct";

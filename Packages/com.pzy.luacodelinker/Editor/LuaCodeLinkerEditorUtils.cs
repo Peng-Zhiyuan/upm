@@ -266,6 +266,7 @@ end
                 {
                     continue;
                 }
+                
                 foreach (var com in comList)
                 {
                     var thisTypeName = com.GetType().Name;

@@ -45,7 +45,7 @@ public class GameObjectPool : StuffObject<GameObjectPool>
     {
         if(prefab == null)
         {
-            return default(T);
+            throw new Exception("prefab is null");
         }
         //Debug.Log("prefab: " + prefab);
         var recycleableGo = TakeoutFromDic(prefab);
@@ -71,15 +71,16 @@ public class GameObjectPool : StuffObject<GameObjectPool>
         var comp = go.GetComponent<RecycledGameObject>();
         if(comp != null)
         {
-            var obj = comp as object;
-            return (T)obj;
+            return (T)(comp as object);
         }
-        if(defaultType != null)
+        if (defaultType == null)
         {
-            var addComp = go.AddComponent(defaultType);
-            var obj = addComp as object;
-            return (T)obj;
+            defaultType = typeof(T);
         }
+        var addComp = go.AddComponent(defaultType);
+        var obj = addComp as object;
+        return (T)obj;
+        
        
 
         throw new Exception("threre is no RecycledGameObject");

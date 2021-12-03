@@ -28,10 +28,15 @@ public class ProjectBuildPiplineWindow : EditorWindow
 				msg = attribute.msg;
 				buildTarget = attribute.buildTarget;
             }
-			EditorGUILayout.HelpBox(msg, MessageType.Info);
+
+			if(msg != "")
+            {
+				EditorGUILayout.HelpBox(msg, MessageType.Info);
+			}
+			
 
 			var currentBuildTarget = EditorUserBuildSettings.activeBuildTarget;
-			var disabled = buildTarget != currentBuildTarget;
+			var disabled = buildTarget != BuildTarget.NoTarget && buildTarget != currentBuildTarget;
 			if(disabled)
             {
 				EditorGUI.BeginDisabledGroup(true);

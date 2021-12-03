@@ -7,7 +7,7 @@ using System;
 public class FormatSetter : AssetPostprocessor
 {
 
-    private const string PATH2 = "FormatSetter/Auto Set Fromat";
+    private const string PATH2 = "pzy.com.*/FormatSetter/Auto Set Fromat";
 
 
     [MenuItem(PATH2)]
@@ -110,7 +110,7 @@ public class FormatSetter : AssetPostprocessor
         return defaultFormat;
     }
 
-    [MenuItem("FormatSetter/Reset All Importer")]
+    [MenuItem("pzy.com.*/FormatSetter/Reset All Importer")]
     public static void ResetAllImporter()
     {
         ResetAndReimport();
@@ -173,7 +173,7 @@ public class FormatSetter : AssetPostprocessor
 
     }
 
-    [MenuItem("FormatSetter/Test Reset 10 Importer")]
+    [MenuItem("pzy.com.*/FormatSetter/Test Reset 10 Importer")]
     public static void TestReset10Importer()
     {
         ResetAndReimport(true);

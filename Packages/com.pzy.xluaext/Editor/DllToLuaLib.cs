@@ -51,7 +51,7 @@ public class DllToLuaLib : Editor {
 	}
 	
 
-	[MenuItem("XLua/Generate Assembly Intelligence Files", false, -100)]
+	[MenuItem("XLua/DllToLuaLib", false, -100)]
 	private static void GenDlls()
 	{
 		Dictionary<Assembly, Type[]> dllNameDict = new Dictionary<Assembly, Type[]>();
@@ -153,7 +153,7 @@ public class DllToLuaLib : Editor {
 			string dir = RootDir;
 			WriteFile(dir, assemblyName, fileDict);
 			
-			Debug.Log(assemblyName + " generating is complete!");
+			Debug.Log(assemblyName + ".zip generating is complete!");
 			CacheMD5(assemblyName, md5);
 		}
 
@@ -252,7 +252,7 @@ public class DllToLuaLib : Editor {
 	{
 		get
 		{
-			var ret = "./LuaAssemblyIntelligence/";
+			var ret = "./LuaIntelligence/";
 			return ret;
 		}
 	}
@@ -261,7 +261,7 @@ public class DllToLuaLib : Editor {
 	{
 		get
 		{
-			var ret = "./LuaAssemblyIntelligenceCache/";
+			var ret = "./LuaIntelligenceCache/";
 			return ret;
 		}
 	}

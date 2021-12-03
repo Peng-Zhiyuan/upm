@@ -15,7 +15,7 @@ public class BundleSetter
     //private const string rootPath = "Assets/Game";
 
 
-    [MenuItem("BundleSetter/Aoto Reset Bundle")]
+    [MenuItem("pzy.com.*/BundleSetter/Aoto Reset Bundle")]
     public static void RefreshBundle()
     {
         Debug.Log("Refresh Bundle");

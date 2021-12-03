@@ -1,9 +1,1 @@
-{
-  "name": "com.pzy.gamemanifest",
-  "version": "1.0.0",
-  "displayName": "Game Manifest",
-  "author": {
-    "name": "pzy",
-    "email": "460424301@qq.com"
-  }
-}
+{"name":"com.pzy.gamemanifest","version":"1.0.1","displayName":"Game Manifest","author":{"name":"pzy","email":"460424301@qq.com"}}

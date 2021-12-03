@@ -6,7 +6,7 @@ using UnityEditor;
 
 public static class ClientConfigEditorCommand
 {
-    [MenuItem("ClientConfig/Generate")]
+    [MenuItem("pzy.com.*/ClientConfig/Generate")]
     static void Generate()
     {
         EtuUnity.Program.Main(new string[] { });

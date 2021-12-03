@@ -1,11 +1,13 @@
 {
     "name": "AddressableExt.Runtime",
+    "rootNamespace": "",
     "references": [
         "GUID:3b493cbc09c2f4ffc8894242d694abab",
         "GUID:56e9c274313824a989393df68af8e92d",
         "GUID:0a18e75e546f247c6b4b66393280c0ba",
         "GUID:9e24947de15b9834991c9d8411ea37cf",
-        "GUID:84651a3751eca9349aac36a66bba901b"
+        "GUID:84651a3751eca9349aac36a66bba901b",
+        "GUID:01435ba3de36f4fae8ef1d0ceabdfd0a"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

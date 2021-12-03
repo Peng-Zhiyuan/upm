@@ -13,39 +13,32 @@ using CustomLitJson;
 public static class HttpUtil
 {
 
-    static WWWForm Json2WWWForm(string jsonStr){        
-        var jsonData = JsonMapper.Instance.ToObject(jsonStr);
-        
-        IDictionary dict = jsonData as IDictionary;
-
+    static WWWForm CreateForm(Dictionary<string, string> dic)
+    {        
         var result = new WWWForm();
-        foreach(var key in dict.Keys){
-            var keyStr = key.ToString();
-            Debug.Log($"[HttpUtil] WWWForm insert : {keyStr} -> {jsonData[keyStr].ToString()}");
-            result.AddField(keyStr, jsonData[keyStr].ToString());
+        foreach(var kv in dic)
+        {
+            var key = kv.Key;
+            var value = kv.Value;
+            result.AddField(key, value);
         }
         return result;
     }
 
-    public static Task<string> RequestTextAsync(string url, HttpMethod method, string content = null, bool useWWWForm = false)
+    public static Task<string> RequestTextAsync(string url, HttpMethod method, Dictionary<string, string> postFormParam)
     { 
-        Debug.Log($"[Send] {url} {method} {content}");
+        Debug.Log($"[Send] {url} {method}");
         var tcs = new TaskCompletionSource<string>();
         UnityWebRequest request;
         if(method == HttpMethod.Post)
         {
+
             request = new UnityWebRequest(url, "POST");
-            if(content != null)
+            if(postFormParam != null)
             {
-                byte[] bytes = null;
-                if(useWWWForm){
-                    var www = Json2WWWForm(content);
-                    bytes = www.data;
-                }
-                else{
-                    bytes = Encoding.UTF8.GetBytes(content);
-                }
-                request.uploadHandler = (UploadHandler) new UploadHandlerRaw(bytes);
+                var form = CreateForm(postFormParam);
+                var bytes = form.data;
+                request.uploadHandler = (UploadHandler)new UploadHandlerRaw(bytes);
             }
         }
         else if(method == HttpMethod.Get)
@@ -57,14 +50,7 @@ public static class HttpUtil
             throw new Exception("unsupport http method: " + method);
         }
         request.downloadHandler = (DownloadHandler) new DownloadHandlerBuffer();
-
-        if(useWWWForm){
-            request.SetRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        }
-        else{
-            request.SetRequestHeader("Content-Type", "application/json");
-        }
-
+        request.SetRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         var oper = request.SendWebRequest();
         oper.completed += (a) =>
         {

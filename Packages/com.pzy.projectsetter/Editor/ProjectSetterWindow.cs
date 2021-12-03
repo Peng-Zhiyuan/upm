@@ -7,7 +7,7 @@ using System;
 
 public class ProjectSetterWindow : EditorWindow
 {
-    [MenuItem("ProjectSetter/Window")]
+    [MenuItem("pzy.com.*/ProjectSetter/Window")]
     public static void OnShow()
     {
         var w = EditorWindow.GetWindow<ProjectSetterWindow>("Project Setter");
