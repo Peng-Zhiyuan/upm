@@ -175,7 +175,7 @@
       "dependencies": {}
     },
     "com.pzy.servicesystem": {
-      "version": "file:com.pzy.servicemanager",
+      "version": "file:com.pzy.servicesystem",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
@@ -194,6 +194,12 @@
     },
     "com.pzy.third.loxodonbundle": {
       "version": "file:com.pzy.third.loxodonbundle",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.third.purets": {
+      "version": "file:com.pzy.third.purets",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
