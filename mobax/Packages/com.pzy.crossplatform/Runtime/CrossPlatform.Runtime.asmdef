@@ -1,0 +1,17 @@
+{
+    "name": "CrossPlatform.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:5f616fee1a63520409ba2f9d68982c27",
+        "GUID:487dc0d9b9fbb4f60b7f8d9c75c39087"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,22 @@
+{
+    "name": "CoreEngine.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:a73119adac1795f47b1fcf91f1fa97fb",
+        "GUID:5f616fee1a63520409ba2f9d68982c27",
+        "GUID:bd1d8c0a08066a947bf592c88976ebe9",
+        "GUID:487dc0d9b9fbb4f60b7f8d9c75c39087",
+        "GUID:01435ba3de36f4fae8ef1d0ceabdfd0a"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

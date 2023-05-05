@@ -1,0 +1,4 @@
+﻿local m = {luaObjectCode}
+
+LuaStaticData = m;
+return m

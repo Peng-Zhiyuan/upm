@@ -1,0 +1,20 @@
+{
+    "name": "ServiceSystem.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:01435ba3de36f4fae8ef1d0ceabdfd0a",
+        "GUID:923b510a301ea4680a9532b7d1332591",
+        "GUID:56e9c274313824a989393df68af8e92d"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

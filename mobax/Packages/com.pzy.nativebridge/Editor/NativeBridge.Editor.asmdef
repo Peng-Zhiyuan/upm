@@ -1,0 +1,17 @@
+{
+    "name": "NativeBridge.Editor",
+    "references": [
+        "GUID:56e9c274313824a989393df68af8e92d"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

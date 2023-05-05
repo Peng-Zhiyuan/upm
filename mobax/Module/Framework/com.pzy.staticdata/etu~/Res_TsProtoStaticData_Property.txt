@@ -1,0 +1,17 @@
+    static _{tableClassNameCamel}: TsProtoTableWrapper<Proto.{tableClassName}, {tableDicKeyType}, {tableDicValueType}>;
+    
+    /**
+    * excel:{excel}, sheet: {sheet}
+    */
+    static get {tableClassName}(): TsProtoTableWrapper<Proto.{tableClassName}, {tableDicKeyType}, {tableDicValueType}>
+    {
+        if(this._{tableClassNameCamel} == null)
+        {
+            var tableName = "{tableName}";
+            var buffer = TsProtoStaticDataRuntime.PopTableData(tableName);
+            var table = Proto.{tableClassName}.decode(buffer);
+            var wrapper = new TsProtoTableWrapper<Proto.{tableClassName}, {tableDicKeyType}, {tableDicValueType}>(tableName, table);
+            this._{tableClassNameCamel} = wrapper;
+        }
+        return this._{tableClassNameCamel}
+    }

@@ -1,0 +1,9 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using CustomLitJson;
+using EtuUnity;
+public class ClientConfig
+{
+{body}
+}

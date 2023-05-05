@@ -1,0 +1,23 @@
+{
+    "name": "BehaviorDesigner.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:fd038cb290df8694eb5923edad409283",
+        "GUID:a73119adac1795f47b1fcf91f1fa97fb",
+        "GUID:487dc0d9b9fbb4f60b7f8d9c75c39087",
+        "GUID:739302cb6f74df645b9093fb49d2e764",
+        "GUID:bd1d8c0a08066a947bf592c88976ebe9",
+        "GUID:dc7d88f34980fcc40ba5b4b7340552a7"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

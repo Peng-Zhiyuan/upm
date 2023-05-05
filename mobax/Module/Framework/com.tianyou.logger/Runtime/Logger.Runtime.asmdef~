@@ -1,0 +1,19 @@
+{
+    "name": "Logger.Runtime",
+    "references": [
+        "GUID:56e9c274313824a989393df68af8e92d",
+        "GUID:487dc0d9b9fbb4f60b7f8d9c75c39087",
+        "GUID:01435ba3de36f4fae8ef1d0ceabdfd0a",
+        "GUID:3b493cbc09c2f4ffc8894242d694abab",
+        "GUID:0a18e75e546f247c6b4b66393280c0ba"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

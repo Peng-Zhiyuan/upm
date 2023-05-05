@@ -1,0 +1,19 @@
+{
+    "name": "ProjectBuildPipline.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:01435ba3de36f4fae8ef1d0ceabdfd0a",
+        "GUID:9b5fdad621648440e94e6f08ce1946d8"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

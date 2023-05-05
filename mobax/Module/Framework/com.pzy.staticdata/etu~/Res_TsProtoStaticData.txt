@@ -1,0 +1,8 @@
+import * as Proto from "../EtuGen/StaticDataProtoClasses";
+import { TsProtoStaticDataRuntime } from "../TsProtoStaticDataRuntime/TsProtoStaticDataRuntime";
+import TsProtoTableWrapper from "../TsProtoStaticDataRuntime/TsProtoTableWrapper";
+
+export default class TsProtoStaticData
+{
+{body}
+}

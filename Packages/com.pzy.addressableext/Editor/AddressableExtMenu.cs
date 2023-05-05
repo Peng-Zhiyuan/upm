@@ -41,11 +41,6 @@ public static class AddressableExtMenu
     [MenuItem("AddressableExt/Auto Reset Assets")]
     static void RefreshAddressableBtn()
     {
-        var yesOrNo = EditorUtility.DisplayDialog("ȷ��Ҫˢ�� Addressable Asset ��", "����ܻ����㿨��һ����", "��", "��");
-        if (!yesOrNo)
-        {
-            return;
-        }
         AddressableExt.ResetAddress();
     }
 
@@ -67,7 +62,7 @@ public static class AddressableExtMenu
     [MenuItem("AddressableExt/Remove All Addressables Info")]
     static void RemoveAllAddressableInfoMenu()
     {
-        var b = EditorUtility.DisplayDialog("ȷ��Ҫ������� Addressable ��Ϣ��", "�����֪���Լ��ڸ�ʲô", "��", "��");
+        var b = EditorUtility.DisplayDialog("Are you sure?", "yes", "no");
         if (!b)
         {
             return;
@@ -80,11 +75,6 @@ public static class AddressableExtMenu
     [MenuItem("AddressableExt/Build New Bundles")]
     static void BuildBundleWithResetGroup()
     {
-        var yesOrNo = EditorUtility.DisplayDialog("ȷ��Ҫ���´����", "����ܻ����㿨��һ���ӣ�����������ڴ�֮���������", "��", "��");
-        if (!yesOrNo)
-        {
-            return;
-        }
         AddressableExt.ResetAddress();
         AddressableExt.BuildPlayerContent();
     }

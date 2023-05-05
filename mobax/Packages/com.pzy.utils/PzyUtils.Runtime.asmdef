@@ -1,0 +1,16 @@
+{
+    "name": "PzyUtils.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:9b5fdad621648440e94e6f08ce1946d8"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,15 @@
+{
+    "name": "Copy.Runtime",
+    "references": [
+        "GUID:c90e9a502bb664823abf45375a272f0d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

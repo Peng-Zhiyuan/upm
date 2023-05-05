@@ -60,6 +60,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.datatreeupdater": {
+      "version": "file:com.pzy.datatreeupdater",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.datemanager": {
       "version": "file:com.pzy.datemanager",
       "depth": 0,
@@ -162,6 +168,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.protobuf": {
+      "version": "file:com.pzy.protobuf",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.remoteres": {
       "version": "file:com.pzy.remoteres",
       "depth": 0,
@@ -180,6 +192,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.pzy.staticdata": {
+      "version": "file:com.pzy.staticdata",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.pzy.stuffobject": {
       "version": "file:com.pzy.stuffobject",
       "depth": 0,
@@ -188,6 +206,12 @@
     },
     "com.pzy.third.assetusagedetector": {
       "version": "file:com.pzy.third.assetusagedetector",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.pzy.third.dotnetzip": {
+      "version": "file:com.pzy.third.dotnetzip",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}

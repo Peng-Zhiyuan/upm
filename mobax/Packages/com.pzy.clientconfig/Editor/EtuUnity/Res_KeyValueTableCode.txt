@@ -1,0 +1,13 @@
+﻿	private static KeyValueTable<{type}> _{name}Table;
+	public static KeyValueTable<{type}> {Name}Table
+	{
+		get
+		{
+			if(_{name}Table == null)
+			{
+				var etuTableString = ClientConfigManager.LoadTableString("{name}");
+				_{name}Table = new KeyValueTable<{type}>("{name}", etuTableString);
+			}
+			return _{name}Table;
+		}
+	}

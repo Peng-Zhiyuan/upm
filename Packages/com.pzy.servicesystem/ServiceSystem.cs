@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
 
-public static class ServiceSystem
+public class ServiceSystem : StuffObject<ServiceSystem>
 {
-	static Dictionary<Type, Service> typeToServiceDic = new Dictionary<Type, Service>();
+	Dictionary<Type, Service> typeToServiceDic = new Dictionary<Type, Service>();
 
-	static Dictionary<string, List<Func<Task>>> asyncMessageToPretaskListDic = new Dictionary<string, List<Func<Task>>>();
-	static List<Service> orderedServiceList = new List<Service>();
+	Dictionary<ServiceMessage, List<Func<Task>>> asyncMessageToPretaskListDic = new Dictionary<ServiceMessage, List<Func<Task>>>();
+	public List<Service> orderedServiceList = new List<Service>();
 
-	public static void Start()
+	public void Setup()
     {
 		//var assembly = typeof(DriverManager).Assembly;
 		var serviceTypeList = ReflectionUtil.GetSubClassesInAllAssemblies<Service>();
@@ -47,20 +47,30 @@ public static class ServiceSystem
 		});
 	}
 
-	public static void RegisterAsyncPretask(string targetMessage, Func<Task> pretask)
+	public Service GetService<T>() where T :Service
     {
-		var pretaskList = DictionaryUtil.GetOrCreateList(asyncMessageToPretaskListDic, targetMessage);
+		var type = typeof(T);
+		if(typeToServiceDic.ContainsKey(type))
+        {
+			return typeToServiceDic[type];
+        }
+		return null;
+    }
+
+	public void RegisterAsyncPretask(ServiceMessage msg, Func<Task> pretask)
+    {
+		var pretaskList = DictionaryUtil.GetOrCreateList(asyncMessageToPretaskListDic, msg);
 		pretaskList.Add(pretask);
 	}
 
-	public static T GetDriver<T>() where T : Service
+	public T GetDriver<T>() where T : Service
     {
 		var type = typeof(T);
 		var service = typeToServiceDic[type] as T;
 		return service;
 	}
 
-	public static void SendMessage(string msg)
+	public void SendMessage(ServiceMessage msg)
     {
 		//foreach(var kv in typeToServiceDic)
   //      {
@@ -69,11 +79,14 @@ public static class ServiceSystem
   //      }
 		foreach(var service in orderedServiceList)
         {
-			service.Handle(msg);
+			if(service.enabled)
+            {
+				service.Handle(msg);
+			}
         }
     }
 
-	public async static Task SendMessageAsync(string msg)
+	public async Task SendMessageAsync(ServiceMessage msg)
     {
 		var stopwatch = new Stopwatch();
 		var pretaskList = DictionaryUtil.TryGet(asyncMessageToPretaskListDic, msg, null);
@@ -115,16 +128,20 @@ public static class ServiceSystem
 
 		foreach (var service in orderedServiceList)
 		{
-			var name = service.GetType().Name;
-			stopwatch.Reset();
-			stopwatch.Start();
-			await service.HandleAsync(msg);
-			stopwatch.Stop();
-			var durationMs = stopwatch.ElapsedMilliseconds;
-			if (durationMs > 0)
-			{
-				Debug.Log($"[ServiceSystem] {msg}: {name} cost {durationMs} ms");
+			if(service.enabled)
+            {
+				var name = service.GetType().Name;
+				stopwatch.Reset();
+				stopwatch.Start();
+				await service.HandleAsync(msg);
+				stopwatch.Stop();
+				var durationMs = stopwatch.ElapsedMilliseconds;
+				if (durationMs > 0)
+				{
+					Debug.Log($"[ServiceSystem] {msg}: {name} cost {durationMs} ms");
+				}
 			}
+
 
 		}
 	}

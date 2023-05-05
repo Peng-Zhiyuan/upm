@@ -1,0 +1,10 @@
+{
+  "name": "com.pzy.stuffobject",
+  "version": "1.0.1",
+  "displayName": "Stuff Object",
+  "author": {
+    "name": "pzy",
+    "email": "460424301@qq.com"
+  },
+  "description": "\u63d0\u4f9b\u53ef\u4f9b Inspector \u67e5\u770b\u7684\u5355\u4f8b\u6a21\u5f0f"
+}

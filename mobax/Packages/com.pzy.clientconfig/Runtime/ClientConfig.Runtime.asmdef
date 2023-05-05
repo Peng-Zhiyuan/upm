@@ -1,0 +1,16 @@
+{
+    "name": "ClientConfig.Runtime",
+    "references": [
+        "GUID:56e9c274313824a989393df68af8e92d",
+        "GUID:9b5fdad621648440e94e6f08ce1946d8"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

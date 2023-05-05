@@ -1,0 +1,355 @@
+using UnityEngine;
+using System.Collections.Generic;
+using System;
+
+public enum PlatformHttp
+{
+
+    Login = 1,
+    Server,
+    BindList,
+    BindSubmit,
+    BindRemove,
+    MobileLogin,
+    MobileCode,
+    WeiXinUserInfo,
+    Logger,
+
+    // lagacy
+    Ping,
+    GuestRegister,
+    VCode,
+    Binding,
+    UpdateLeaderboardScore,
+    GetLeaderboard,
+    GetChapterScore,
+
+}
+
+
+public enum GameHttp
+{
+    PlayerLogin = 100,
+    RoleCreat,
+    RoleSelect,
+    RoleItemGet,
+    RoleDailyGet,
+    RoleEdit,
+    RoleBind,
+    RoleRemoveBind,
+    BindReward,
+    NormalAd,
+    GladTime,
+    ReduceAdTime,
+    UpdateAddress,
+    GetAddress,
+    ExchangeShopBuy,
+    GetSort,
+    InviteFriend,
+    InviteGetGift,
+    ShareFriend,
+    BattleEnd,
+    BattleOffline,
+    GetRoleSimple,
+    WorldCruiseShare,
+    WorldCruiseSubmit,
+    LotterySubmit,
+    LotteryAD,
+    // faceking
+    StageSubmit,
+    StageGetter,
+    Leaderboard,
+    UseEmotion,
+    RemoveEmotion,
+    ShopBuy,
+    LeaderboardLike,
+    LeaderboardUnlike,
+    Sign,
+
+}
+
+
+enum ServerType
+{
+    Platform,
+    Game,
+}
+
+public static class GameNetwork
+{ 
+
+    private const bool LOG = false;
+
+    private static void RegisterPlatformHttpCommand()
+    {
+        RegisterCommand((int)PlatformHttp.Login, ServerType.Platform, "/login/");
+        RegisterCommand((int)PlatformHttp.Server, ServerType.Platform, "/server/");
+        RegisterCommand((int)PlatformHttp.BindList, ServerType.Platform, "/bind/list");
+        RegisterCommand((int)PlatformHttp.BindSubmit, ServerType.Platform, "/bind/submit");
+        RegisterCommand((int)PlatformHttp.BindRemove, ServerType.Platform, "/bind/remove");
+
+        RegisterCommand((int)PlatformHttp.MobileLogin, ServerType.Platform, "/mobile/login");
+        RegisterCommand((int)PlatformHttp.MobileCode, ServerType.Platform, "/mobile/code");
+        RegisterCommand((int)PlatformHttp.WeiXinUserInfo, ServerType.Platform, "/userinfo/");
+        RegisterCommand((int)PlatformHttp.Logger, ServerType.Platform, "/logger/");
+
+        //lagacy
+        RegisterCommand ((int)PlatformHttp.Ping, ServerType.Platform, "/Ping");
+        RegisterCommand((int)PlatformHttp.GuestRegister, ServerType.Platform, "/users/register");
+        RegisterCommand((int)PlatformHttp.UpdateLeaderboardScore, ServerType.Platform, "/stage/stageClear");
+        RegisterCommand((int)PlatformHttp.GetLeaderboard, ServerType.Platform, "/sort/getSort");
+        RegisterCommand((int)PlatformHttp.GetChapterScore, ServerType.Platform, "/sort/getScore");
+        RegisterCommand((int)PlatformHttp.VCode, ServerType.Platform, "/sdk/mobile/vcode");
+    }
+
+
+    private static void RegisterGameHttpCommand()
+    {
+        RegisterCommand((int)GameHttp.PlayerLogin, ServerType.Game, "/login/");
+        RegisterCommand((int)GameHttp.RoleCreat, ServerType.Game, "/role/create/");
+        RegisterCommand((int)GameHttp.RoleSelect, ServerType.Game, "/role/select/");
+        RegisterCommand((int)GameHttp.RoleItemGet, ServerType.Game, "/getter/data/item");
+        RegisterCommand((int)GameHttp.RoleDailyGet, ServerType.Game, "/getter/data/daily");
+        RegisterCommand((int)GameHttp.RoleEdit, ServerType.Game, "/role/rename/rename");
+        RegisterCommand((int)GameHttp.RoleBind, ServerType.Game, "/role/bind/");
+        RegisterCommand((int)GameHttp.RoleRemoveBind, ServerType.Game, "/role/bind/remove");
+        RegisterCommand((int)GameHttp.BindReward, ServerType.Game, "/active/bind/");
+        RegisterCommand((int)GameHttp.NormalAd, ServerType.Game, "/ad/normalAd");
+        RegisterCommand((int)GameHttp.GladTime, ServerType.Game, "/ad/gladTime");
+        RegisterCommand((int)GameHttp.ReduceAdTime, ServerType.Game, "/ad/reduceTime");
+        RegisterCommand((int)GameHttp.UpdateAddress, ServerType.Game, "/shop/exchangeShop/address");
+        RegisterCommand((int)GameHttp.GetAddress, ServerType.Game, "/shop/exchangeShop/getAddress");
+        RegisterCommand((int)GameHttp.ExchangeShopBuy, ServerType.Game, "/shop/exchangeShop/buy");
+        RegisterCommand((int)GameHttp.GetSort, ServerType.Game, "/getter/sort/");
+        RegisterCommand((int)GameHttp.InviteFriend, ServerType.Game, "/invite/inviteFriend");
+        RegisterCommand((int)GameHttp.InviteGetGift, ServerType.Game, "/invite/getGift");
+        RegisterCommand((int)GameHttp.ShareFriend, ServerType.Game, "/invite/shareFriend");
+        RegisterCommand((int)GameHttp.BattleEnd, ServerType.Game, "/battle/result");
+        RegisterCommand((int)GameHttp.BattleOffline, ServerType.Game, "/battle/offline");
+        RegisterCommand((int)GameHttp.GetRoleSimple, ServerType.Game, "/getter/role/simple");
+        RegisterCommand((int)GameHttp.WorldCruiseShare, ServerType.Game, "/active/worldCruise/share");
+        RegisterCommand((int)GameHttp.WorldCruiseSubmit, ServerType.Game, "/active/worldCruise/submit");
+        RegisterCommand((int)GameHttp.LotterySubmit, ServerType.Game, "/active/lottery/submit");
+        RegisterCommand((int)GameHttp.LotteryAD, ServerType.Game, "/active/lottery/share");
+        RegisterCommand((int)GameHttp.StageSubmit, ServerType.Game, "/stage/submit");
+        RegisterCommand((int)GameHttp.StageGetter, ServerType.Game, "/stage/getter");
+        RegisterCommand ((int)GameHttp.Leaderboard, ServerType.Game, "/getter/sort/");
+        RegisterCommand ((int)GameHttp.UseEmotion, ServerType.Game, "/skill/use");
+        RegisterCommand ((int)GameHttp.RemoveEmotion, ServerType.Game, "/skill/remove");
+        RegisterCommand ((int)GameHttp.ShopBuy, ServerType.Game, "/shop/simple/");
+        RegisterCommand ((int)GameHttp.LeaderboardLike, ServerType.Game, "/likes/submit");
+        RegisterCommand ((int)GameHttp.LeaderboardUnlike, ServerType.Game, "/likes/cancel");
+        RegisterCommand ((int)GameHttp.Sign, ServerType.Game, "/active/sign/");
+    }
+
+
+ 
+    public static void Init()
+    {
+        NetworkManager.Stuff.requestSuccessPredealHandler += OnRequestSuccessPredeal;
+        NetworkManager.Stuff.anyRequestSuspendCallback += OnAnyRequestSuspended;
+        NetworkManager.Stuff.addExtraParamHandler += OnAddExtraParam;
+        NetworkManager.Stuff.blockInputHandler += OnBlockInput;
+        Application.logMessageReceived += OnUnityLog;
+        NetworkManager.Stuff.unexpectedLogicFailCallback += GameServerInfoFailsHandler;
+    }
+
+    private static void GameServerInfoFailsHandler(NetworkResult result)
+    {
+        if (result.msgWithRetTypeIsJsonData.ret.ToString() == "phone number error" ||
+            result.msgWithRetTypeIsJsonData.err == "phone_vcode_error")
+            DialogMgr.Instance.ShowDialog(DialogStyle.DS_ConfirmOnly, "", "手机号或验证码错误");
+        else
+        {
+            DialogMgr.Instance.ShowDialog(DialogStyle.DS_ConfirmOnly, "", result.msgWithRetTypeIsJsonData.err);
+        }
+    }
+    private static void OnUnityLog(string logString, string stackTrace, LogType type)
+    {
+        if(type == LogType.Exception)
+        {
+            Debug.Log("logString:" + logString);
+            if(logString.StartsWith("NetworkException:"))
+            {
+                // TODO: 网络异常,在这里弹框通知用户
+
+                // 示例:
+                 var parts = logString.Split(':');
+                 var errorCode = parts[1].Trim();
+                 var errorCodeUserMsg = LocalizationManager.Stuff.GetText(errorCode);
+                 var msg = errorCodeUserMsg;
+                 //if(GameStatus.Stuff.developer)
+                 //{
+                 //    msg += "\n" + logString;
+                 //}
+                 DialogMgr.Instance.ShowDialog(DialogStyle.DS_ConfirmOnly, "Exception", msg, result =>{
+                     if(errorCode == "logout")
+                     {
+                         NetworkManager.Stuff.DisposeAllSuspendedReqeust();
+                         FaceKingRoot.GetSingle().Reboost();
+                     }
+                 });
+            }
+            else if(logString.StartsWith("SilentException:"))
+            {
+             
+            }
+            else 
+            {
+                // TODO: 非网络异常, 在这里弹框通知用户
+                //Debug.Log("err:"+ logString);
+                // 示例:
+                DialogMgr.Instance.ShowDialog(DialogStyle.DS_ConfirmOnly, "Exception", logString, msg =>{});
+            }
+           
+        }
+    }
+    public static bool HandleErrorCode (string errorCode)
+    {
+        var isLogoutMsg = errorCode == "logout";
+        if (isLogoutMsg) {
+            DialogMgr.Instance.ShowDialog (DialogStyle.DS_ConfirmOnly, "Exception", Localization.Get (errorCode), result => {
+                if (errorCode == "logout") {
+                    NetworkManager.Stuff.DisposeAllSuspendedReqeust ();
+                    FaceKingRoot.GetSingle ().Reboost ();
+                }
+            });
+        }
+
+        return isLogoutMsg;
+    }
+
+    private static string _gameServer;
+
+    public static string GameServerUrl
+    {
+        set
+        {
+            _gameServer = value;
+            Debug.Log("[NetworkHandler] Game server has been set to: " + value);
+            RegisterGameHttpCommand();
+        }
+    }
+
+    private static string _platformServer;
+    public static string PlatformServer
+    {
+        set
+        {
+            _platformServer = value;
+            Debug.Log("[NetworkHandler] Platform server has been set to: " + value);
+            RegisterPlatformHttpCommand();
+        }
+    }
+
+    private static void RegisterCommand(int id, ServerType serverType, string urlPostFix, bool block = true)
+	{
+        var urlPrefix = ServerTypeToURL(serverType);
+        var url = $"{urlPrefix}{urlPostFix}";
+        NetworkCommandInfo info = new NetworkCommandInfo();
+		info.url = url;
+		info.isBlock = block;
+        NetworkManager.Stuff.RegisterCommand(id, info);
+        if (LOG)
+        {
+            Debug.Log("[NetworkHandler]: " + id + " -> " + url);
+        }
+	}
+        
+
+    private static string ServerTypeToURL(ServerType type)
+	{
+        switch(type)
+		{
+            case ServerType.Platform: 
+                if(_platformServer == null)
+                {
+                    throw new Exception("[NetworkHandler] platformServerUrl not set yet, use GameHttp.platformServerUrl to set");
+                }
+                return _platformServer;
+            case ServerType.Game: 
+                if(_gameServer == null)
+                {
+                    throw new Exception("[NetworkHandler] gameServerUrl not set yet, set GameHttp.gameServerUrl after user select game server");
+                }
+                return _gameServer;
+            default:
+                throw new Exception("Unknown serverType: " + type);
+		}
+	}
+
+    static void OnRequestSuccessPredeal(NetworkResult result)
+    {
+        // TODO: 某个网络请求已完成
+
+        // 某个请求已获得成功返回
+         var msg = result.msgWithRetTypeIsJsonData;
+        GameInfo.Stuff.UpdateData(msg.cache);
+        ServerTime.Instance.ProtocolInit (msg.time);
+    }
+
+    private static bool waiteUserHandleSuspend;
+    private static void OnAnyRequestSuspended()
+    {
+        // TODO: 某个请求发生了HTTP失败
+
+        // 有请求因为网络问题无法访问服务器
+        // 在这里需要询问用户是否重试
+        // 使用 NetworkManager.RepostAllSuspendedRequest() 重发所有被挂起的请求
+        // 或者使用 NetworkManager.DisposeAllSuspendedReqeust() 取消所有被挂起的请求并重制游戏
+
+        // 示例代码:
+         if(waiteUserHandleSuspend)
+         {
+             return;
+         }
+         waiteUserHandleSuspend = true;
+         var msg = LocalizationManager.Stuff.GetText("PI_NET_WAIT");
+         DialogMgr.Instance.ShowDialog (DialogStyle.DS_ConfirmCancel, "", msg, result =>{
+             if(result == "true")
+             {
+                 NetworkManager.Stuff.RepostAllSuspendedRequest();
+             }
+             else
+             {
+                 NetworkManager.Stuff.DisposeAllSuspendedReqeust();
+                 // TODO: 重登录
+                 FaceKingRoot.GetSingle().Reboost();
+                 //GameService.GotoLoginPageAndCleanData();
+             }
+             waiteUserHandleSuspend = false;
+         });
+    }
+
+
+    private static void OnAddExtraParam(Dictionary<string, string> arg)
+    {
+        // TODO: 为请求添加额外参数
+
+        // 每当请求将要被发送时被调用
+        // 这里进行额外参数添加
+
+         var userInfo = GameInfo.Stuff.userGameServerInfo;
+         if(userInfo != null)
+         {
+            // add cookie
+            arg[userInfo.cookie.key] = userInfo.cookie.val;
+         }
+    }
+
+    private static void OnBlockInput(bool b)
+    {
+        // TODO: 当请求阻塞用户界面
+
+        // 示例代码:
+         if(b)
+         {
+            FlowerFloating.Show();
+         }
+         else
+         {
+            FlowerFloating.Hide();
+         }
+     }
+   
+}

@@ -30,6 +30,7 @@ public class ExecUtil
 		p.StartInfo.RedirectStandardError = true;
 		p.StartInfo.RedirectStandardInput = true;
 		p.StartInfo.RedirectStandardOutput = true;
+		p.StartInfo.CreateNoWindow = true;
 		if(workingDir != null)
         {
 			p.StartInfo.WorkingDirectory = workingDir;

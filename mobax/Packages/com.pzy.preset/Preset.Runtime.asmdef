@@ -1,0 +1,19 @@
+{
+    "name": "Preset.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:3b493cbc09c2f4ffc8894242d694abab",
+        "GUID:01435ba3de36f4fae8ef1d0ceabdfd0a",
+        "GUID:b1491559a643942a6a9f4fe0deaeecaf",
+        "GUID:487dc0d9b9fbb4f60b7f8d9c75c39087"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

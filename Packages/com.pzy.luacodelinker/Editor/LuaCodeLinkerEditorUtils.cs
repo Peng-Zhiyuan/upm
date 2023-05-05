@@ -162,6 +162,7 @@ function {0}:Awake()
 end
 
 function {0}:OnActive()
+    self.super:Init()
     self:AddListener()
     self:Init()
 end

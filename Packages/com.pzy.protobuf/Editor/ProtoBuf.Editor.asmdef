@@ -1,0 +1,19 @@
+{
+    "name": "ProtoBuf.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:67ed0de3744d2fd459135002ef6602b5",
+        "GUID:01435ba3de36f4fae8ef1d0ceabdfd0a"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

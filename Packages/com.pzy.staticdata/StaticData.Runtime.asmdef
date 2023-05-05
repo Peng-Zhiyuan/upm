@@ -1,0 +1,19 @@
+{
+    "name": "StaticData.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:56e9c274313824a989393df68af8e92d",
+        "GUID:9b5fdad621648440e94e6f08ce1946d8",
+        "GUID:01435ba3de36f4fae8ef1d0ceabdfd0a",
+        "GUID:f985c5348bbf6104f80c3301ce50e25c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

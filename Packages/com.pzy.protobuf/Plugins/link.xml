@@ -1,0 +1,7 @@
+<linker>
+  <!--
+  Preserve types and members in an assembly
+  -->
+  <!--No "preserve" attribute and no types specified means preserve all-->
+  <assembly fullname="protobuf-net"/>
+</linker>

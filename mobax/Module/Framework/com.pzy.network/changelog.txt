@@ -1,0 +1,14 @@
+1.1.0
+使用新的 UpdateManager 接口, 移除 UpdateProxyObj
+1.0.8
+移除 unexpectedFailException
+1.0.7
+从注册信息中移除 isBlock
+1.0.6
+修复 block 不关闭 bug
+1.0.5
+block 开关事件总是成对
+1.0.2
+GameNetwork templation
+1.0.1
+RequestAllowLogicFailAsync 需要指定允许的错误码

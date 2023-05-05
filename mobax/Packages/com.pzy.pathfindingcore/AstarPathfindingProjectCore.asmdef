@@ -1,0 +1,56 @@
+{
+    "name": "AstarPathfindingProjectCore",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2bafac87e7f4b9b418d9448d219b01ab",
+        "GUID:f4059aaf6c60a4a58a177a2609feb769",
+        "GUID:2665a8d13d1b3f18800f46e256720795",
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:e0cd26848372d4e5c891c569017e11f1",
+        "GUID:8a2eafa29b15f444eb6d74f94a930e1d",
+        "GUID:de4e6084e6d474788bb8c799d6b461eb",
+        "GUID:a73119adac1795f47b1fcf91f1fa97fb",
+        "GUID:5f616fee1a63520409ba2f9d68982c27",
+        "GUID:7777438ff9e1e714e99f72879526ed25"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "MODULE_BURST",
+        "MODULE_MATHEMATICS",
+        "MODULE_COLLECTIONS",
+        "MODULE_JOBS"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.burst",
+            "expression": "1.0.4",
+            "define": "MODULE_BURST"
+        },
+        {
+            "name": "com.unity.mathematics",
+            "expression": "1.1.0",
+            "define": "MODULE_MATHEMATICS"
+        },
+        {
+            "name": "com.unity.collections",
+            "expression": "0.1.1-preview",
+            "define": "MODULE_COLLECTIONS"
+        },
+        {
+            "name": "com.unity.jobs",
+            "expression": "0.1.1-preview",
+            "define": "MODULE_JOBS"
+        },
+        {
+            "name": "com.unity.collections",
+            "expression": "0.11-preview",
+            "define": "MODULE_COLLECTIONS_0_11_OR_NEWER"
+        }
+    ],
+    "noEngineReferences": false
+}

@@ -1,0 +1,71 @@
+#! /bin/sh
+
+# $1 xCode projct path
+
+cd "$(dirname "$0")"
+
+# 删除已存在的ipa文件，多个ipa可能会让人觉得迷惑
+echo "rm build/*.ipa"
+rm build/*.ipa
+# 有时候xcode的产出会放到这个目录下，我不太确定是为什么，总之一起删除好了
+echo "rm build/Release-iphoneos/*.ipa"
+rm -r build/Release-iphoneos/*.ipa
+# 删除app
+rm -r build/Release-iphoneos/*.app
+# 删除zip
+rm -r build/Release-iphoneos/*.zip
+
+# 寻找 xcworkspace
+xcworkspace=`find *.xcworkspace -maxdepth 0`
+
+if [[ $xcworkspace == "" ]]; then
+	# 不指定编译目标，xcodebuilder 会默认编译目录下存在的 *.project
+	echo "xcodebuild -configuration Release DEPLOYMENT_POSTPROCESSING=YES STRIP_INSTALLED_PRODUCT=YES SEPARATE_STRIP=YES COPY_PHASE_STRIP=YES"
+	xcodebuild -configuration Release DEPLOYMENT_POSTPROCESSING=YES STRIP_INSTALLED_PRODUCT=YES SEPARATE_STRIP=YES COPY_PHASE_STRIP=YES EMBEDDED_CONTENT_CONTAINS_SWIFT=NO
+else
+	# 指定编译 xcworkspace
+		echo "xcodebuild -configuration Release DEPLOYMENT_POSTPROCESSING=YES STRIP_INSTALLED_PRODUCT=YES SEPARATE_STRIP=YES COPY_PHASE_STRIP=YES -workspace $xcworkspace -scheme Unity-iPhone CONFIGURATION_BUILD_DIR=build/Release-iphoneos"
+	xcodebuild -configuration Release DEPLOYMENT_POSTPROCESSING=YES STRIP_INSTALLED_PRODUCT=YES SEPARATE_STRIP=YES COPY_PHASE_STRIP=YES EMBEDDED_CONTENT_CONTAINS_SWIFT=NO -workspace $xcworkspace -scheme Unity-iPhone CONFIGURATION_BUILD_DIR=build/Release-iphoneos
+fi
+
+# 检查xcodebuild是否成功
+ret=$?
+if [[ $ret != 0 ]]; then
+	echo "[build-xcode]: Failed, xcodebuild returns $ret"
+	exit $ret
+fi
+
+# .app可能在'build'目录下，也可能在'build/Release-iphoneos'目录下
+# 寻找并进入那个目录
+cd build
+if [ `ls | grep .app | wc -l` == "0" ]; then
+	cd Release-iphoneos
+	if [ `ls | grep .app | wc -l` == "0" ]; then
+		echo "No .app found!"
+		exit 1
+	fi
+fi
+
+echo "pwd"; pwd
+echo "ls"; ls
+
+app=`echo *.app`
+appfilename=${app##*/}
+echo "makeipa"
+mkdir Payload
+
+echo "cp -r $app ./Payload/$appfilename"
+cp -r $app ./Payload/$appfilename
+
+#echo "touch iTunesArtwork"
+#touch iTunesArtwork
+
+#echo %是取左边的字符，删除右边的字符"
+echo "zip -r ${appfilename%*.app}.ipa -q Payload"
+zip -r ${appfilename%*.app}.ipa -q Payload 
+
+echo "rm -rf Payload"
+rm -rf Payload
+
+#echo "rm iTunesArtwork"
+#rm iTunesArtwork

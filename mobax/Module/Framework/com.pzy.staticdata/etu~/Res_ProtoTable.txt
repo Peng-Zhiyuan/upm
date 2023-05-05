@@ -1,0 +1,9 @@
+syntax = "proto3";
+{package}
+
+{import}
+
+message {name}
+{
+    map<{keyType}, {valueType}> dic = 1;
+}
