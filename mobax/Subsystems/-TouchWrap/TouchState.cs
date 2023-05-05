@@ -1,0 +1,8 @@
+﻿public enum TOUCH_STATE
+{
+    TOUCH_EMPTY,
+    TOUCH_DOWN,
+    TOUCH_MOVE,
+    TOUCH_SCALE,
+    TOUCH_UP,
+}

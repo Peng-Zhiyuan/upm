@@ -1,0 +1,81 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SM_Grass_C_Mat_I
+  m_Shader: {fileID: 4800000, guid: 8efafc627694c4944bc298bb457a93ef, type: 3}
+  m_ShaderKeywords: 
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - NoiseTex:
+        m_Texture: {fileID: 2800000, guid: b906b1750ef74f6458aef9a53b8139f1, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - Texture2D_noise:
+        m_Texture: {fileID: 2800000, guid: 4f8e7fb0a3f079341a18b9305de6eae3, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 376637d3bdae5184aa3d3a80794dd0f0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - BillBoard: 0
+    - Distance: 0
+    - Impack: 0
+    - NoiseMin: 0.25
+    - NoiseScale: 4.5
+    - NoiseSpeed: 0
+    - Smoothness: 0
+    - Vector1_105D8818: 0.1
+    - Vector1_4697DBEF: 50
+    - Vector1_64756C33: 0.2
+    - Vector1_93738F24: 0.05
+    - Vector1_A7970BB: 1
+    - Vector1_B99D2E82: 0.05
+    - WinPow: 0
+    - WinUV: 0
+    - _CutOff: 0.305
+    - _RandomNormal: -12.16
+    - _WindAFrequency: 2
+    - _WindAIntensity: 2
+    - _WindBFrequency: 1
+    - _WindBIntensity: 1
+    - _WindCFrequency: 1
+    - _WindCIntensity: 1
+    m_Colors:
+    - ColorBase: {r: 0.21481274, g: 0.49056602, b: 0.18280526, a: 0}
+    - ColorTop: {r: 0.5007977, g: 0.8867924, b: 0.27189392, a: 1}
+    - Color_23D8F4A5: {r: 0.09411712, g: 0.4245283, b: 0.16448243, a: 1}
+    - Color_4ED6DDC5: {r: 0.3631853, g: 0.7735849, b: 0.20799215, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _GroundColor: {r: 0, g: 0, b: 0, a: 1}
+    - _WindATiling: {r: 0.2, g: 0.1, b: 0.1, a: 0.1}
+    - _WindBTiling: {r: 0.1, g: 0.1, b: 0.1, a: 0.1}
+    - _WindCTiling: {r: 0.1, g: 0.1, b: 0.1, a: 0.1}
+  m_BuildTextureStacks: []
+--- !u!114 &7302852390416119385
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 4

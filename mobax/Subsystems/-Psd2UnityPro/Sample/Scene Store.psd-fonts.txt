@@ -1,0 +1,5 @@
+Please copy these fonts to your project's assets folder, and rename them exactly as below:
+
+Skranji-Bold
+CarterOne
+AveriaSansLibre-LightItalic

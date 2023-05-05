@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: DepthHegihtFog
+  m_Shader: {fileID: 4800000, guid: babaf4ae58b06444c8ccb6b7b690f0fa, type: 3}
+  m_ShaderKeywords: _CutFogByDepth _DIST_TYPE_VIEWSPACE _FUNC_TYPE_LINEAR _MIX_TYPE_MUL
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: 3000
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NoiseTex:
+        m_Texture: {fileID: 2800000, guid: d762f1e2ea3d8ff4381ba284a22a8ac1, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - _CutFogByDepth: 1
+    - _DIST_TYPE: 0
+    - _DepthDensity: 0.633
+    - _DepthEnd: 0
+    - _DepthFar: 75.9
+    - _DepthHeightRatio: 0.35
+    - _DepthNear: 11.1
+    - _DepthNoiseScale: 1.3
+    - _DepthStart: 10
+    - _ExpDepthDensity: 0.0331
+    - _FUNC_TYPE: 0
+    - _HeightDensity: 0.747
+    - _HeightEnd: 365.2
+    - _HeightNoiseScale: 7.45
+    - _HeightStart: -12.7
+    - _MIX_TYPE: 1
+    - _NoiseSpX: 0
+    - _NoiseSpY: 0
+    - _StencilComp: 6
+    - _StencilRef: 1
+    - _WorldPosScale: 0.0009
+    m_Colors:
+    - _FogColor: {r: 0.9528302, g: 0.7792852, b: 0.66967785, a: 1}
+  m_BuildTextureStacks: []
+--- !u!114 &4675063050102338594
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 4

@@ -1,0 +1,47 @@
+fileFormatVersion: 2
+guid: f73ebaa74f30946c3b5aa0e08fd80214
+labels:
+- Asset
+- Assets
+- Pivot
+- Anchor
+- Button
+- Text
+- uGUI
+- GUI
+- Layers
+- Import
+- Convert
+- PSD
+- Photoshop
+PluginImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  iconMap: {}
+  executionOrder: {}
+  defineConstraints: []
+  isPreloaded: 0
+  isOverridable: 0
+  isExplicitlyReferenced: 0
+  validateReferences: 1
+  platformData:
+  - first:
+      Any: 
+    second:
+      enabled: 0
+      settings: {}
+  - first:
+      Editor: Editor
+    second:
+      enabled: 1
+      settings:
+        DefaultValueInitialized: true
+  - first:
+      Windows Store Apps: WindowsStoreApps
+    second:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

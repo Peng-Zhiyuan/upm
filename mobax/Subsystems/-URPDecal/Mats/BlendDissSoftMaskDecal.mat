@@ -1,0 +1,203 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BlendDissSoftMaskDecal
+  m_Shader: {fileID: 4800000, guid: 1d1045a50ac3c46a1ac30a686a2b4583, type: 3}
+  m_ShaderKeywords: DECAL_ON TESSELLATION_ON _ProjectionAngleDiscardEnable
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: b4a68120cbc7e4c9d8b2fddd93b2a765, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BrushTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Diss_Tex:
+        m_Texture: {fileID: 2800000, guid: cb228c889d360ae4fa417e7798d745b1, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 8b2d758a93991aa41ada374fb11cff19, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Mask_Tex:
+        m_Texture: {fileID: 2800000, guid: 46035cc99f28e724f95a82be9de486b9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SpecGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _texcoord:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - _ANIMATION: 0
+    - _AlphaClip: 0
+    - _AlphaCutoff: 0.5
+    - _Alpha_Int: 1
+    - _Blend: 0
+    - _BumpScale: 1
+    - _ClearCoatMask: 0
+    - _ClearCoatSmoothness: 0
+    - _Cull: 2
+    - _Culling: 2
+    - _Cutoff: 0.5
+    - _DecalOn: 1
+    - _DetailAlbedoMapScale: 1
+    - _DetailNormalMapScale: 1
+    - _DirectionalFresnel: 0
+    - _DstBlend: 0
+    - _EmissionPower: 1
+    - _EnvironmentReflections: 1
+    - _FogEmissionFalloff: 0.5
+    - _FogEmissionPower: 20
+    - _FogFalloff: 1
+    - _FogMax: 0
+    - _FogMin: -20
+    - _FogRelativeWorldOrLocal: 1
+    - _FogWaveAmplitudeX: 0.3
+    - _FogWaveAmplitudeZ: 0.3
+    - _FogWaveFreqX: 0.5
+    - _FogWaveFreqZ: 0.5
+    - _FogWaveSpeedX: 2
+    - _FogWaveSpeedZ: 2
+    - _FresnelIntensity: 1
+    - _FresnelSmooth: 0.5
+    - _FresnelThreshold: 0.5
+    - _GGXSpecular: 0
+    - _GIIntensity: 1
+    - _GlossMapScale: 0
+    - _Glossiness: 0
+    - _GlossyReflections: 0
+    - _MedBrushStrength: 0
+    - _MedSmooth: 0.25
+    - _MedThreshold: 1
+    - _MetalReflProbeIntensity: 1
+    - _Metallic: 0
+    - _OVERRIDE_FOG_COLOR: 0
+    - _OcclusionStrength: 1
+    - _OpenHeightFog: 0
+    - _Parallax: 0.005
+    - _ProjectionAngleDiscardEnable: 1
+    - _ProjectionAngleDiscardThreshold: 0.001
+    - _QueueOffset: 0
+    - _ReceiveShadows: 1
+    - _ReflBrushStrength: 0
+    - _ReflProbeIntensity: 1
+    - _ReflectSmooth: 0.25
+    - _ReflectThreshold: 0
+    - _STANDARD_FOG: 0
+    - _ShadowBrushStrength: 0
+    - _ShadowSmooth: 0.25
+    - _ShadowThreshold: 0.75
+    - _Smoothness: 0.5
+    - _SmoothnessTextureChannel: 0
+    - _Soft_Value: 0
+    - _SpecularHighlights: 1
+    - _SpecularIntensity: 1
+    - _SpecularSmooth: 0.5
+    - _SpecularThreshold: 0.5
+    - _SrcBlend: 1
+    - _Stencil: 0
+    - _StencilComp: 6
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilRef: 1
+    - _StencilWriteMask: 255
+    - _Surface: 0
+    - _TessellationOn: 1
+    - _U_speed: 0
+    - _U_speed_diss: 0
+    - _U_speed_mask: 0.5
+    - _V_speed: 0
+    - _V_speed_diss: 0
+    - _V_speed_mask: 0.5
+    - _WorkflowMode: 1
+    - _ZWrite: 1
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FogColor: {r: 1, g: 1, b: 1, a: 1}
+    - _FogEmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _MedColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ReflectColor: {r: 0, g: 0, b: 0, a: 0}
+    - _ShadowColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
+    - _SpecularLightOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _TintColor: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+--- !u!114 &734332141103264752
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 4

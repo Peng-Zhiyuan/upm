@@ -1,0 +1,10 @@
+v1.0.5
+事件队列，修复异步方法可能回调不成功
+v1.0.3
+分离许多小库
+v1.0.2
+explicted implement IProcess.Update
+v1.0.1
+AudioManager音效BGM开关
+v1.0.0
+初始版本
