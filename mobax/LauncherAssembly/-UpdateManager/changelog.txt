@@ -1,0 +1,2 @@
+1.0.1
+继承于 StuffObject，不再需要显式调用 Update

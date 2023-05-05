@@ -1,0 +1,26 @@
+{
+    "name": "HuatuoEx.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2373f786d14518f44b0f475db77ba4de",
+        "GUID:9b5fdad621648440e94e6f08ce1946d8",
+        "GUID:9e24947de15b9834991c9d8411ea37cf",
+        "GUID:f987f80f5395c441abced690c020362a",
+        "GUID:f39bc50de97f642dca0dd9edfdf5becf",
+        "GUID:69448af7b92c7f342b298e06a37122aa",
+        "GUID:c056b0b10713c407e9ce3b2b6a9cd38a",
+        "GUID:01435ba3de36f4fae8ef1d0ceabdfd0a",
+        "GUID:f985c5348bbf6104f80c3301ce50e25c"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

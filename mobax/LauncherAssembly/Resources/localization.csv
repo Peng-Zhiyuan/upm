@@ -1,0 +1,48 @@
+id,cn,en,jp,tw
+confirm,确认,OK,確認,確認
+common_service,客服,Service,コール,客服
+cancel,取消,Cancel,ロック,取消
+test_key,测试内容,test content,テスト,測試內容
+download_content,将下载游戏执行的必要档案({0:0.00}MB)。是否继续？,Necessary files ({0:0.00}MB) for running the game will be downloaded. Continue?,ゲームの実行に必要なファイル({0:0.00}MB)をダウンロードします。続行しますか？,將下載遊戲執行的必要檔案({0:0.00}MB)。是否繼續？
+download_tip,建议在 Wi-Fi环境下进行下载。,It is recommended to download under Wi-Fi environment.,ダウンロードはWi-Fi環境で行うことをお勧めします。,建議在 Wi-Fi 環境下進行下載。
+downloading,下载中,Downloading,ダウンロード中,下載中
+error_occured,出错了，请重试,"some error occured, please try agian",エラーが発生しました、再度実行してください,出錯了，請重試
+loading,载入中...,Loading...,ロード中…,載入中...
+justloading,载入中...,Loading...,ロード中…,載入中...
+open_discord,欢迎大家加入到官方Discord频道获取最新游戏资讯并参与福利领取。,Join our official Discord to get the latest news and exclusive reward codes!,公式Discordに参加して、最新ニュースや限定特典コードをゲットしましょう！,歡迎大家加入到官方Discord頻道獲取最新遊戲資訊並參與福利領取。
+maintain,维护中,In Maintenance,メンテナンス中,維護中
+refresh,刷新,Refresh,リフレッシュ,刷新
+quit,离开,Quit,終了,離開
+skip,跳过,Skip,スキップ,略過
+update_notice,更新公告,Update Notice,更新のお知らせ,更新公告
+countdown,倒计时,Countdown,カウントダウン,倒計時
+not_update,下次更新,Skip,次回の更新,下次更新
+to_update,更新,Update,更新,更新
+notice,公告,Notice,お知らせ,公告
+ok,确定,OK,確認,確定
+update,更新,Update,更新,更新
+game_left_time,剩余时间,Remaining,"ざんりゅうじかん	剩餘時間",
+game_target,营收目标(金币),Revenue Target,収益目標,營收目標(金幣)
+game_bad,库存,Storage,ストック,庫存
+game_info,通过连线选择<color=#FF6E6E>3-5</color>个顾客想要的零件,Link <color=#FF6E6E>3-5</color>  Components to fulfill the customers' orders.,お客さんのオーダー通りに<color=#FF6E6E>3-5</color>魔械部品をつなげよう,通過連線選擇<color=#FF6E6E>3-5</color>個顧客想要的零件
+game_customerA,顾客A,Customer A,顧客A,顧客A
+game_customerB,顾客B,Customer B,顧客B,顧客B
+game_title_result,胜利,Victory,勝利,勝利
+game_resultevaluate,通关评价,Evaluation,通関評価,通關評價
+game_resulttime,通关时长,Time,通関時間,通關時長
+game_title_pass_info,通关信息,Information,通関情報,通關信息
+game_title_reward,奖励信息,Reward,ボーナス,獎勵資訊
+no_reward,本次更新没有额外奖励,There are no additional rewards for this update.,このアップデートによる追加報酬はありません。,本次更新沒有額外獎勵
+tips_rewards,下载完成后，可得到以下奖励,"Once the download is complete, you can get the following rewards",ダウンロード完了後、以下のボーナスをプレゼントします。,下載完成後，可得到以下獎勵
+game_words_replay,再来一次,Try Again,もう一度,再來一次
+game_words_play_again,还想再玩,Play Again,もう一度,還想再玩
+gameTrash_1_1,啊，好忙好忙，生意太好也会有烦恼啊……诶？！快来帮我一把，之后会有“时之沙特别商品”做报酬哦！,"It's so busy around here! Even when business is good, it's still a bother. Hey! Help me out and I'll reward you with a ""Sands of Time Surprise"" later!",あーっ、忙しい忙しいっ！忙しすぎるのも考えものだわ……って！早く手伝ってよ、「時の砂スペシャルアイテム」をあげるから！,啊，好忙好忙，生意太好也會有煩惱啊……誒？！快來幫我一把，之後會有“時之沙特別商品”做報酬哦！
+gameTrash_1_2,呜哇！大家别挤！虽说是打折，但也要有序排队呀！快来搭把手！你不是很想要那个半自动工作台吗！我之后会跳楼价卖你啦！ ,"Woah! There's no need to rush! Even when there's a sale, you must still queue up! Is that you? Help me out and I'll sell you that workbench at a discount!",きゃーっ、みんな押さないで！割引してるって言っても、並んで貰わなきゃ困るわ！来て、手を貸して欲しいの。半自動式の作業台が欲しいんでしょ？出血大サービスで売ってあげるから！,嗚哇！大家別擠！雖說是打折，但也要有序排隊呀！快來搭把手！你不是很想要那個半自動工作臺嗎！我之後會跳樓價賣你啦！
+gameTrash_1_3,救救我……客人们已经快把“时之沙”的门挤爆了，我自己实在是撑不下去啦！,Help me out... The "Sands of Time" is overflowing with guests and I'm almost at my limit!,たすけて……お客さん達が「時の砂」の入り口に押し寄せてて……！もう抑えきれないのよ～！,救救我……客人們已經快把“時之沙”的門擠爆了，我自己實在是撐不下去啦！
+gameTrash_2_1,噢哟？手脚蛮麻利的嘛，要不要来我这里做终身员工？工资高，福利足，而且还不加班哦！,"Oh? You seem to be quite proficient at this.. Want to join us as a permanent employee? I can offer you a high salary, work benefits, and no overtime! ",あらら？なかなかやるじゃない。よかったらずっとうちで働かない？お給料はいいし福利厚生も充実してるし、残業はゼロよ！,噢喲？手腳蠻麻利的嘛，要不要來我這裡做終身員工？工資高，福利足，而且還不加班哦！
+gameTrash_2_2,嘿嘿，再加把劲，“时之沙”特别商品在向你招手哦~,"Looking good! , Those gifts from the ""Sands of Time"" are almost yours!",ふふっ、頑張ってね。「時の砂スペシャルアイテム」が待ってるわよ～！,嘿嘿，再加把勁，“時之沙”特別商品在向你招手哦~
+gameTrash_2_3,新的装潢、新的分店，越来越多，嘿嘿……诶？！我、我....这是在算要给你多少额外奖金啦！,"More decorations, more shops, and more... I-It's nothing! I'm just going through the rewards for you!",新しい装飾に、2号店……どんどん増えていくわね、うふふ……えっ！？こ、これは……あなたへの臨時ボーナスを数えてただけよっ！,新的裝潢、新的分店，越來越多，嘿嘿……誒？！我、我....這是在算要給你多少額外獎金啦！
+gameTrash_3_1,哎呀！你这么弄，钱……不是，客人都会跑掉的！,"Oh dear! If you keep this up, I'm going to lose all my customers!",ちょっと！そんな風にしたら、お金……じゃなくて、お客様がみんな逃げちゃうわよ！！,哎呀！你這麼弄，錢……不是，客人都會跑掉的！
+gameTrash_3_2,这肯定不是你的真实销售实力，.再认真一点嘛，结束后真的会有惊喜大礼哦！,I believe you can do better than this! There's really a reward for you!,もっと本気出して売るのよ！終わったら本当にサプライズプレゼントがあるんだから！,這肯定不是你的真實銷售實力，.再認真一點嘛，結束後真的會有驚喜大禮哦！
+gameTrash_4_1,客人又跑了，我的分店……好啦！打起精神，可不要再怠慢后面的客人了,The customers have left again... Alright! Pay attention and don't forget about the customers at the back!,お客様がまた行っちゃった……私の2号店が……よし！気を取り直して、次のお客様にしっかり接客していきましょ！,客人又跑了，我的分店……好啦！打起精神，可不要再怠慢後面的客人了
+account_forbiden,您的账号已被封号，请联系客服,"Your account has been suspended, please contact customer service.",アカウントが停止されました。カスタマーサービスに連絡してください。,您的帳號已被封鎖，請聯繫客服。
